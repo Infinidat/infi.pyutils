@@ -62,6 +62,8 @@ class FunctionSignature(object):
         return None
     def get_arg_names(self):
         return (arg.name for arg in self.get_args())
+    def get_required_arg_names(self):
+        return set(arg.name for arg in self.get_args() if not arg.has_default())
     def has_variable_args(self):
         return self._varargs_name is not None
     def has_variable_kwargs(self):
@@ -88,7 +90,7 @@ class FunctionSignature(object):
             returned[arg_name] = arg
 
     def _check_missing_arguments(self, args_dict):
-        required_arguments = set(arg.name for arg in self.get_args() if not arg.has_default())
+        required_arguments = self.get_required_arg_names()
         missing_arguments = required_arguments - set(args_dict)
         if missing_arguments:
             raise MissingArguments("The following arguments were not specified: %s" % ",".join(map(repr, missing_arguments)))
