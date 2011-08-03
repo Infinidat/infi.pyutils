@@ -1,5 +1,5 @@
 import functools
-from functors import Identity
+from .functors import Identity
 from types import MethodType
 
 class MethodMap(object):
