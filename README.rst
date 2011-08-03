@@ -218,5 +218,39 @@ Logical aggregations are done with And, Or, Not:
   False
   >>> is_not_none(1)
   True
-  
-  
+
+Lazy
+----
+*infi.pyutils.lazy* presents utilities for lazy computation and caching
+
+cached_property and cached_method
++++++++++++++++++++++++++++++++++
+
+ >>> from infi.pyutils.lazy import cached_property
+ >>> class MyClass(object):
+ ...     called = False
+ ...     @cached_property
+ ...     def value(self):
+ ...         assert not self.called
+ ...         self.called = True
+ ...         return 1
+ >>> m = MyClass()
+ >>> m.value
+ 1
+ >>> m.value
+ 1
+
+ >>> from infi.pyutils.lazy import cached_method
+ >>> class MyClass(object):
+ ...     called = False
+ ...     @cached_method
+ ...     def get_value(self):
+ ...         assert not self.called
+ ...         self.called = True
+ ...         return 1
+ >>> m = MyClass()
+ >>> m.get_value()
+ 1
+ >>> m.get_value()
+ 1
+ 
