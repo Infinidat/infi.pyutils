@@ -1,5 +1,5 @@
 import unittest
-from infi.reflection.method_map import MethodMap
+from infi.pyutils.method_map import MethodMap
 
 class MethodMapTest(unittest.TestCase):
     def test__method_map(self):

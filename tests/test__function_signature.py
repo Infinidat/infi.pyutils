@@ -1,7 +1,7 @@
 import time
 from unittest import TestCase
-from infi.reflection.function_signature import FunctionSignature
-from infi.reflection.exceptions import SignatureException, InvalidKeywordArgument, UnknownArguments, MissingArguments
+from infi.pyutils.function_signature import FunctionSignature
+from infi.pyutils.exceptions import SignatureException, InvalidKeywordArgument, UnknownArguments, MissingArguments
 
 # no named tuples for python 2.5 compliance...
 class ExpectedArg(object):
