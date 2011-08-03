@@ -99,7 +99,7 @@ Predicates
 Predicates are functors taking arguments and returning True/False
 ::
 
-  >>> from infi.pyutils.functors.predicates import Predicate
+  >>> from infi.pyutils.predicates import Predicate
   >>> p = Predicate(lambda obj: obj is None)
   >>> p(None)
   True
@@ -109,7 +109,7 @@ Predicates are functors taking arguments and returning True/False
 AlwaysTrue and AlwaysFalse are available:
 ::
 
-  >>> from infi.pyutils.functors.predicates import AlwaysTrue, AlwaysFalse
+  >>> from infi.pyutils.predicates import AlwaysTrue, AlwaysFalse
   >>> AlwaysTrue(1)
   True
   >>> AlwaysTrue()
@@ -124,7 +124,7 @@ AlwaysTrue and AlwaysFalse are available:
 Identity:
 ::
 
-   >>> from infi.pyutils.functors.predicates import Identity
+   >>> from infi.pyutils.predicates import Identity
    >>> is_none = Identity(None)
    >>> is_none
    <is None>
@@ -136,7 +136,7 @@ Identity:
 Equality:
 ::
 
-   >>> from infi.pyutils.functors.predicates import Equality
+   >>> from infi.pyutils.predicates import Equality
    >>> class NeverEquals(object):
    ...     def __eq__(self, other):
    ...         return False
@@ -164,7 +164,7 @@ Attribute checks:
    >>> b.x = 2
    >>> b.y = 3
    >>> b.z = 4
-   >>> from infi.pyutils.functors.predicates import ObjectAttributes
+   >>> from infi.pyutils.predicates import ObjectAttributes
    >>> match = ObjectAttributes(z=4)
    >>> match
    <.z==4>
@@ -182,7 +182,7 @@ Attribute checks:
 
 Dictionary items check:
    >>> d = dict(a=1, b=2)
-   >>> from infi.pyutils.functors.predicates import DictionaryItems
+   >>> from infi.pyutils.predicates import DictionaryItems
    >>> match = DictionaryItems(a=1)
    >>> match
    <['a']==1>
@@ -200,7 +200,7 @@ Dictionary items check:
 Logical aggregations are done with And, Or, Not:
 ::
 
-  >>> from infi.pyutils.functors.predicates import And, Or, Not
+  >>> from infi.pyutils.predicates import And, Or, Not
   >>> obj = object()
   >>> is_none_or_obj = Or(Identity(obj), Identity(None))
   >>> is_none_or_obj #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
