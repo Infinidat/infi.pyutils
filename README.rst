@@ -1,12 +1,15 @@
 Overview
 ========
-*infi.reflection* is a set of utilities for various introspection and reflection tasks in Python.
+*infi.pyutils* is a set of utilities for various tasks in Python.
 
-Features
+Contents
 ========
 
-Method Map
+Reflection
 ----------
+
+Method Map
+++++++++++
 
 Method maps is intended for the repeating pattern described below:
 ::
@@ -46,3 +49,174 @@ Using Method Maps is pretty straightforward:
   Traceback (most recent call last):
     ...
   NotImplementedError
+
+Functors
+--------
+*infi.pyutils.functors* is a utility package for working with function or function-like objects.
+
+Misc. Functors
+++++++++++++++
+*Always* is used to constantly return a value:
+::
+
+  >>> from infi.pyutils.functors import Always
+  >>> a = Always(5)
+  >>> a
+  <Always 5>
+  >>> a()
+  5
+  >>> a(1, 2, 3)
+  5
+  
+*Identity* is a functor that always returns its single argument:
+::
+
+  >>> from infi.pyutils.functors import Identity
+  >>> Identity
+  <Identity>
+  >>> Identity(2)
+  2
+  >>> obj = object()
+  >>> Identity(obj) is obj
+  True
+
+PASS
+++++
+
+PASS is a 'null functor'. You can always call it anyway you like, it will always return None::
+
+  >>> from infi.pyutils.functors import PASS
+  >>> PASS(1, 2, 3)
+  >>> PASS(666, a=2, c=4)
+
+You can also use it as a context manager that does nothing::
+
+  >>> with PASS:
+  ...     pass
+  
+Predicates
+++++++++++
+Predicates are functors taking arguments and returning True/False
+::
+
+  >>> from functors.predicates import Predicate
+  >>> p = Predicate(lambda obj: obj is None)
+  >>> p(None)
+  True
+  >>> p(1)
+  False
+
+AlwaysTrue and AlwaysFalse are available:
+::
+
+  >>> from functors.predicates import AlwaysTrue, AlwaysFalse
+  >>> AlwaysTrue(1)
+  True
+  >>> AlwaysTrue()
+  True
+  >>> AlwaysFalse(1)
+  False
+  >>> AlwaysFalse(343)
+  False
+  >>> AlwaysFalse()
+  False
+  
+Identity:
+::
+
+   >>> from functors.predicates import Identity
+   >>> is_none = Identity(None)
+   >>> is_none
+   <is None>
+   >>> is_none(None)
+   True
+   >>> is_none(1)
+   False
+
+Equality:
+::
+
+   >>> from functors.predicates import Equality
+   >>> class NeverEquals(object):
+   ...     def __eq__(self, other):
+   ...         return False
+   >>> equals_to_1 = Equality(1)
+   >>> equals_to_1
+   < == 1>
+   >>> equals_to_1(1)
+   True
+   >>> equals_to_1(2)
+   False
+   >>> obj = NeverEquals()
+   >>> Equality(obj)(obj) # make sure it's not identity
+   False
+
+Attribute checks:
+::
+
+   >>> class SomeObject(object):
+   ...     pass
+   >>> a = SomeObject()
+   >>> a.x = 1
+   >>> a.y = 2
+   >>> a.z = 4
+   >>> b = SomeObject()
+   >>> b.x = 2
+   >>> b.y = 3
+   >>> b.z = 4
+   >>> from functors.predicates import ObjectAttributes
+   >>> match = ObjectAttributes(z=4)
+   >>> match
+   <.z==4>
+   >>> match(a)
+   True
+   >>> match(b)
+   True
+   >>> match = ObjectAttributes(x=1, y=2)
+   >>> match(a)
+   True
+   >>> match(b)
+   False
+   >>> ObjectAttributes(missing_attribute=2)(a)
+   False
+
+Dictionary items check:
+   >>> d = dict(a=1, b=2)
+   >>> from functors.predicates import DictionaryItems
+   >>> match = DictionaryItems(a=1)
+   >>> match
+   <['a']==1>
+   >>> 
+   >>> match(d)
+   True
+   >>> match(dict(a=2, b=2))
+   False
+   >>> match(dict())
+   False
+   >>> match(dict(b=2))
+   False
+   
+   
+Logical aggregations are done with And, Or, Not:
+::
+
+  >>> from functors.predicates import And, Or, Not
+  >>> obj = object()
+  >>> is_none_or_obj = Or(Identity(obj), Identity(None))
+  >>> is_none_or_obj #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+  Or(<is <object object at 0x...>>, <is None>) 
+  >>> is_none_or_obj(obj)
+  True
+  >>> is_none_or_obj(None)
+  True
+  >>> is_none_or_obj(1)
+  False
+  >>> is_not_none = Not(is_none)
+  >>> is_not_none
+  <not <is None>>
+  >>> is_not_none(None)
+  False
+  >>> is_not_none(1)
+  True
+  
+  
