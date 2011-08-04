@@ -1,26 +1,29 @@
-
 import functools
 import inspect
 
-def wraps(wrapped, assigned=('__module__', '__name__', '__doc__'), updated=('__dict__',)):
+def wraps(wrapped):
     """ a convenience function on top of functools.wraps:
 
     - adds the original function to the wrapped function as __wrapped__ attribute."""
-    func = functools.wraps(wrapped, assigned, updated)
-    setattr(wrapped, "__wrapped__", wrapped)
-    return func
+    def new_decorator(f):
+        returned = functools.wraps(wrapped)(f)
+        returned.__wrapped__ = wrapped
+        return returned
+    return new_decorator
 
 def getargspec(func):
     """calls inspect's getargspec with func.__wrapped__ if exists, else with func"""
-    func = getattr(func, "__wrapped__", func)
+    wrapped = getattr(func, "__wrapped__", None)
+    if wrapped is not None:
+        return getargspec(wrapped)
     return inspect._getargspec(func)
 
-def mockeypatch_inspect():
+def monkeypatch_inspect():
     """applies getarspec monkeypatch on inspect"""
-    setattr(inspect, "_getargspec", inspect.getargspec)
-    setattr(inspect, "getargspec", getargspec)
-    setattr(inspect, "__patched_by_infi__", True)
+    inspect._getargspec = inspect.getargspec
+    inspect.getargspec = getargspec
+    inspect.__patched_by_infi__ = True
 
 if not getattr(inspect, "__patched_by_infi__", False):
-    mockeypatch_inspect()
+    monkeypatch_inspect()
 

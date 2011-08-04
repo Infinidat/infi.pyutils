@@ -1,5 +1,5 @@
 import unittest
-
+import inspect
 from infi.pyutils.decorators import wraps
 
 # inspired from http://docs.python.org/library/functools.html#functools.partial
@@ -12,15 +12,27 @@ def my_decorator(f):
     return wrapper
 
 @my_decorator
-def example():
+def example(a, b, c):
     """Docstring"""
     print 'Called example function'
     return 1
 
+@my_decorator
+@my_decorator
+def example_nested(a, b, c):
+    """Docstring"""
+    return 2
+
 class DecoratorTestCase(unittest.TestCase):
     def test_wrapped_attribute_exists(self):
-        self.assertNotEquals(getattr(example, "__wrapped__", None), None)
+        self.assertIsNotNone(getattr(example, "__wrapped__", None))
 
     def test_example(self):
-        self.assertEquals(example(), 1)
+        self.assertEquals(example(1, 2, 3), 1)
 
+class GetargspecTest(unittest.TestCase):
+    def test__argument_names(self):
+        for function in (example, example_nested):
+            argspec = inspect.getargspec(function)
+            self.assertEquals(argspec.args, ['a', 'b', 'c'])
+            
