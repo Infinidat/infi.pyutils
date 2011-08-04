@@ -1,5 +1,7 @@
 # Adapted from http://wiki.python.org/moin/PythonDecoratorLibrary#Cached_Properties
 
+from .decorators import wraps
+
 class cached_property(object):
     """Decorator for read-only properties evaluated only once.
 
@@ -24,7 +26,7 @@ class cached_property(object):
     it was updated in seconds since the epoch.
 
     To expire a cached property value manually just do::
-    
+
         del inst._cache[<property name>]
     """
     def __init__(self, fget, doc=None):
@@ -46,52 +48,46 @@ class cached_property(object):
             cache[self.__name__] = value
         return value
 
-class cached_method(object):
+def cached_method(func):
     """Decorator that caches a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
     not re-evaluated.
     """
-    def __init__(self, func):
-        super(cached_method, self).__init__()
-        self.func = func
-        self.__name__ = func.__name__
-        self.__doc__ = func.__doc__
-        self.inst = None
 
-    def __call__(self, *args, **kwargs):
+    @wraps(func)
+    def callee(inst, *args, **kwargs):
         try:
-            value = self.inst._cache[self.__name__]
+            value = inst._cache[func.__name__]
         except (KeyError, AttributeError):
-            value = self.func(self.inst, *args, **kwargs)
+            value = func(inst, *args, **kwargs)
             try:
-                self.inst._cache[self.__name__] = value
+                inst._cache[func.__name__] = value
             except AttributeError:
-                self.inst._cache = {}
-                self.inst._cache[self.__name__] = value
+                inst._cache = {}
+                inst._cache[func.__name__] = value
         return value
 
-    def __get__(self, obj, objtype):
-        self.inst = obj
-        return self
+    callee.__cached_method__ = True
+    return callee
 
 def clear_cache(self):
     if hasattr(self, '_cache'):
         getattr(self, '_cache').clear()
 
 def populate_cache(self, attributes_to_skip=["get_vendor"]):
-    """ this method attempts to get all the lazy cached properties and methods
+    """this method attempts to get all the lazy cached properties and methods
     There are two special cases:
-    * Some attributes may not be available and raises exceptions.
+
+    - Some attributes may not be available and raises exceptions.
       If you wish to skip these, pass them in the attributes_to_skip list
-    * The calling of cached methods is done without any arguments, and catches TypeError exceptions
-      for the case a cached method requires arguments. The exception is logged.
-    """
+    - The calling of cached methods is done without any arguments, and catches TypeError exceptions
+      for the case a cached method requires arguments. The exception is logged."""
     from inspect import getmembers
     from logging import debug, exception
     for key, value in getmembers(self):
         if key in attributes_to_skip:
             continue
-        if isinstance(value, cached_method):
+        if hasattr(value, "__cached_method__"):
             debug("getting attribute %s from %s", repr(key), repr(self))
             try:
                 _ = value()
