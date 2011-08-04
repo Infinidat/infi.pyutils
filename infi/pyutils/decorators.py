@@ -11,19 +11,39 @@ def wraps(wrapped):
         return returned
     return new_decorator
 
-def getargspec(func):
+def inspect_getargspec_patch(func):
     """calls inspect's getargspec with func.__wrapped__ if exists, else with func"""
-    wrapped = getattr(func, "__wrapped__", None)
-    if wrapped is not None:
-        return getargspec(wrapped)
-    return inspect._getargspec(func)
+    return inspect._infi_patched_getargspec(_get_innner_func(func))
+def ipython_getargspec_patch(func):
+    return _ipython_inspect_module._infi_patched_getargspec(_get_innner_func(func))
 
-def monkeypatch_inspect():
-    """applies getarspec monkeypatch on inspect"""
-    inspect._getargspec = inspect.getargspec
-    inspect.getargspec = getargspec
-    inspect.__patched_by_infi__ = True
+def _get_innner_func(f):
+    while True:
+        wrapped = getattr(f, "__wrapped__", None)
+        if wrapped is None:
+            return f
+        f = wrapped
 
-if not getattr(inspect, "__patched_by_infi__", False):
-    monkeypatch_inspect()
+_PATCHED_NAME_PREFIX = "_infi_patched_"
 
+def monkey_patch(module, name, replacement):
+    original_name = _PATCHED_NAME_PREFIX + name
+    if getattr(module, original_name, None) is None:
+        setattr(module, original_name, getattr(module, name))
+        setattr(module, name, replacement)
+
+monkey_patch(inspect, "getargspec", inspect_getargspec_patch)
+
+_ipython_inspect_module = None
+try:
+    # ipython 0.11
+    from IPython.core import oinspect as _ipython_inspect_module
+except ImportError:
+    try:
+        # ipython 0.10.2
+        from IPython import OInspect as _ipython_inspect_module
+    except ImportError:
+        pass
+
+if _ipython_inspect_module is not None:
+    monkey_patch(_ipython_inspect_module, "getargspec", ipython_getargspec_patch)
