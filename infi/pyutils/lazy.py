@@ -74,7 +74,7 @@ def clear_cache(self):
     if hasattr(self, '_cache'):
         getattr(self, '_cache').clear()
 
-def populate_cache(self, attributes_to_skip=["get_vendor"]):
+def populate_cache(self, attributes_to_skip=[]):
     """this method attempts to get all the lazy cached properties and methods
     There are two special cases:
 
