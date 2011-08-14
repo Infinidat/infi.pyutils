@@ -258,4 +258,7 @@ Decorator Utilities
 -------------------
 The *infi.pyutils.decorators* package contains a specially-crafted *wraps* implementation (functools.wraps counterpart) preserving information on the originally wrapped function. It also patches *inspect.getargspec* and IPython's similar mechanisms in order to display proper argument information on wrapped functions. It is therefore recommended to use it instead of the default ones.
 
-It also contains *contextmanager* (a drop-in replacement for *contextlib.contextmanager*), using the crafted *wraps* implementation.
+
+Context Utilities
+-----------------
+*infi.pyutils.contexts* contains *contextmanager*, a drop-in replacement for *contextlib.contextmanager*, using the crafted *wraps* implementation from *decorators*.

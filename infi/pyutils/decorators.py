@@ -1,12 +1,5 @@
-import contextlib
 import functools
 import inspect
-
-def contextmanager(func):
-    @wraps(func)
-    def helper(*args, **kwds):
-        return contextlib.GeneratorContextManager(func(*args, **kwds))
-    return helper
 
 def wraps(wrapped):
     """ a convenience function on top of functools.wraps:
