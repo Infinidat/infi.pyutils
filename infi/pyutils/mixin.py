@@ -32,53 +32,38 @@ request = HttpRequest(...)
 # Find out that there's a need for authentication
 ...
 
-install_mixin(request, HttpRequest, UserAuth)
+install_mixin(request, UserAuth)
 """
 from .lazy import cached_function
 
 __all__ = [ "install_mixin", "install_mixin_if" ]
 
-def install_mixin_if(obj, klass, mixin, condition):
+def install_mixin_if(obj, mixin, condition):
     """
     Same as install_mixin, but installs the mixin only if *condition* evaluates to truth.
     """
     if not condition:
         return
-    install_mixin(obj, klass, mixin)
+    install_mixin(obj, mixin)
 
-def install_mixin(obj, klass, mixin):
-    obj.__class__ = _replace_class(type(obj), klass, mixin)
+def install_mixin(obj, mixin):
+    obj.__class__ = _replace_class(type(obj), mixin)
 
 @cached_function
-def _replace_class(cls, cls_to_add_mixin, mixin):
-    if not issubclass(cls, cls_to_add_mixin):
-        # No need to search, cls_to_add_mixin isn't in this tree.
-        result_cls = cls
-    elif getattr(cls, '__mixin_shadow__', None) == cls_to_add_mixin:
+def _replace_class(cls, mixin):
+    if hasattr(cls, '__mixins__'):
+        # This is already a shadow class.
         if mixin in cls.__mixins__:
-            # Class is already a shadow for cls_to_add_mixin and with the mixin we want.
-            result_cls = cls
-        else:
-            # Class is already a shadow for cls_to_add_mixin, so we'll create a new shadow class with the added mixin.
-            mixins = [ mixin ] + cls.__mixins__
-            bases = [ mixin ] + list(cls.__bases__)
-            result_cls = type('%s[shadow for mixins %s]' % (cls.__name__, ", ". join([ m.__name__ for m in mixins ])),
-                              tuple(bases), dict(__mixins__=mixins, __mixin_shadow__=cls_to_add_mixin))
-            result_cls.__module__ = cls.__module__
-    elif cls == cls_to_add_mixin:
-        # This is the class we want to add the mixin to, so we'll create a new subclass of (mixin, cls_to_add_mixin)
-        result_cls = type('%s[shadow for mixins %s]' % (cls.__name__, mixin.__name__), (mixin, cls),
-                          dict(__mixins__=[ mixin ], __mixin_shadow__=cls_to_add_mixin))
-        result_cls.__module__ = cls.__module__
+            # We already added this mixin.
+            return cls
+        real_cls = cls.__real_class__
+        mixins = [ mixin ] + cls.__mixins__
     else:
-        # Nothing matched, so we'll traverse the base classes and see.
-        new_bases = [ _replace_class(base_cls, cls_to_add_mixin, mixin) for base_cls in cls.__bases__ ]
-        if new_bases != cls.__bases__:
-            result_cls = type('%s[implicit mixin %s]' % (cls.__name__, mixin.__name__),
-                              tuple([ cls ] + new_bases),
-                              dict(__implicit_mixins__=[ mixin ], __mixins__=[], __mixin_shadow__=cls))
-            result_cls.__module__ = cls.__module__
-        else:
-            result_cls = cls
-
+        real_cls = cls
+        mixins = [ mixin ]
+        
+    name = "%s[%s]" % (real_cls.__name__, ", ".join([ m.__name__  for m in mixins ]))
+    bases = mixins + [ real_cls ]
+    result_cls = type(name, tuple(bases), dict(__real_class__=real_cls, __mixins__=mixins))
+    result_cls.__module__ = real_cls.__module__
     return result_cls
