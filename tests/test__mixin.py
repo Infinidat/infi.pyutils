@@ -9,7 +9,7 @@ def test_install_mixin__simple():
             self.a = 1
         
     a = A()
-    install_mixin(a, A, B)
+    install_mixin(a, B)
 
     a.foo()
     assert a.a == 1
@@ -28,7 +28,7 @@ def test_install_mixin__multiple_inheritence1():
             self.a = 1
 
     d = D()
-    install_mixin(d, D, E)
+    install_mixin(d, E)
 
     d.foo()
     assert d.a == 1
@@ -47,7 +47,7 @@ def test_install_mixin__multiple_inheritence2():
             self.a = 1
 
     d = D()
-    install_mixin(d, C, E)
+    install_mixin(d, E)
     assert issubclass(d.__class__, E)
 
     d.foo()
@@ -68,11 +68,11 @@ def test_install_mixin__multiple_inheritence3():
             def foo(self):
                 self.a = 1
     d = D()
-    install_mixin(d, B, E)
+    install_mixin(d, E)
     assert issubclass(d.__class__, E)
     assert isinstance(d, E)
     assert isinstance(d, D)
-    install_mixin(d, D, D.D_E)
+    install_mixin(d, D.D_E)
     assert issubclass(d.__class__, D.D_E)
     assert isinstance(d, E)
     assert isinstance(d, D)
