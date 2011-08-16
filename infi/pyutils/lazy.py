@@ -76,7 +76,7 @@ def cached_function(func):
     not re-evaluated.
     """
     def make_key(args, kwargs):
-        return HashableDict(__args__=args, **kwargs)
+        return (tuple(args), frozenset(kwargs.iteritems()))
     
     @wraps(func)
     def callee(*args, **kwargs):
@@ -143,12 +143,3 @@ class LazyImmutableDict(object):
 
     def _create_value(self, key):
         raise NotImplementedError()
-
-# Borrowed from http://stackoverflow.com/questions/1151658/python-hashable-dicts
-class HashableDict(dict):
-    def __key(self):
-        return tuple((k,self[k]) for k in sorted(self))
-    def __hash__(self):
-        return hash(self.__key())
-    def __eq__(self, other):
-        return self.__key() == other.__key()
