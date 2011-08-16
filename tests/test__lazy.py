@@ -1,67 +1,49 @@
-from unittest import TestCase
-
+import unittest
+from collections import defaultdict
 from infi.pyutils.lazy import cached_property, cached_method, clear_cache, populate_cache
 
-class TestSubject(object):
+class Subject(object):
     def __init__(self):
+        super(Subject, self).__init__()
         self._counter = 0
-
+        self._counters = defaultdict(lambda: defaultdict(int))
     @cached_property
-    def counter(self):
+    def prop(self):
         self._counter += 1
         return self._counter
+    def orig_method(self, value):
+        """some docstring"""
+        self._counters['orig_method'][value] += 1
+        return self._counters['orig_method'][value]
+    cached_method_1 = cached_method(orig_method)
+    cached_method_2 = cached_method(orig_method)
 
-    @cached_method
-    def get_counter(self):
-        """some documentation"""
-        self._counter += 1
-        return self._counter
-
-    @cached_method
-    def is_equal(self, number):
-        return self._counter == number
-
-class CachedPropertyTestCase(TestCase):
+class TestCase(unittest.TestCase):
     def setUp(self):
-        self.subject = TestSubject()
+        super(TestCase, self).setUp()
+        self.subject = Subject()
 
-    def test_cached_property(self):
-        self.assertEqual(self.subject.counter, 1)
-        self.assertEqual(self.subject.counter, 1)
-
-    def test_clear_cache(self):
-        self.assertEqual(self.subject.counter, 1)
+class CachedPropertyTest(TestCase):
+    def test__cached_property(self):
+        self.assertEquals(self.subject.prop, 1)
+    def test__clear_cache(self):
+        self.assertEquals(self.subject.prop, 1)
         clear_cache(self.subject)
-        self.assertEqual(self.subject.counter, 2)
-
-    def test_populate_cache(self):
-        self.assertEqual(self.subject._counter, 0)
+        self.assertEquals(self.subject.prop, 2)
+    def test__populate_cache(self):
+        self.assertEquals(self.subject._counter, 0)
         populate_cache(self.subject)
-        self.assertEqual(self.subject._counter, 2)
+        self.assertEquals(self.subject._counter, 1)
 
-class CachedMethodTestCase(TestCase):
-    def setUp(self):
-        self.subject = TestSubject()
-
-    def test_cached_value(self):
-        self.assertEqual(self.subject.get_counter(), 1)
-        self.assertEqual(self.subject.get_counter(), 1)
-
-    def test_clear_cache(self):
-        self.assertEqual(self.subject.get_counter(), 1)
+class CachedMethodTest(TestCase):
+    def test__doc(self):
+        self.assertTrue(self.subject.cached_method_1.__doc__ == self.subject.cached_method_2.__doc__ == self.subject.orig_method.__doc__)
+    def test__name(self):
+        self.assertTrue(self.subject.cached_method_2.__name__ == self.subject.cached_method_2.__name__ == self.subject.orig_method.__name__)
+    def test__cached_method(self):
+        self.assertEquals(self.subject.cached_method_1(1), 1)
+        self.assertEquals(self.subject.cached_method_2(1), 2)
+    def test__clear_cache(self):
+        self.assertEquals(self.subject.cached_method_1(1), 1)
         clear_cache(self.subject)
-        self.assertEqual(self.subject.get_counter(), 2)
-
-    def test_doc(self):
-        self.assertEqual(self.subject.get_counter.__doc__, "some documentation")
-
-    def test_name(self):
-        self.assertEqual(self.subject.get_counter.__name__, "get_counter")
-
-    def test_is_equal(self):
-        self.assertEqual(self.subject.is_equal(0), True)
-        self.subject.get_counter()
-        self.assertEqual(self.subject.is_equal(0), True)
-        self.assertEqual(self.subject.is_equal(1), True)
-        self.assertEqual(self.subject.is_equal(0), True)
-
+        self.assertEquals(self.subject.cached_method_1(1), 2)

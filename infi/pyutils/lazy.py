@@ -1,5 +1,5 @@
 # Adapted from http://wiki.python.org/moin/PythonDecoratorLibrary#Cached_Properties
-
+import itertools
 from .decorators import wraps
 
 class cached_property(object):
@@ -48,23 +48,25 @@ class cached_property(object):
             cache[self.__name__] = value
         return value
 
+_cached_method_id_allocator = itertools.count()
+
 def cached_method(func):
     """Decorator that caches a method's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
     not re-evaluated.
     """
-
+    method_id = next(_cached_method_id_allocator)
     @wraps(func)
     def callee(inst, *args, **kwargs):
         try:
-            value = inst._cache[func.__name__]
+            value = inst._cache[method_id]
         except (KeyError, AttributeError):
             value = func(inst, *args, **kwargs)
             try:
-                inst._cache[func.__name__] = value
+                inst._cache[method_id] = value
             except AttributeError:
                 inst._cache = {}
-                inst._cache[func.__name__] = value
+                inst._cache[method_id] = value
         return value
 
     callee.__cached_method__ = True
