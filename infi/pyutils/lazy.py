@@ -49,7 +49,7 @@ class cached_property(object):
         return value
 
 def cached_method(func):
-    """Decorator that caches a function's return value each time it is called.
+    """Decorator that caches a method's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
     not re-evaluated.
     """
@@ -65,6 +65,29 @@ def cached_method(func):
             except AttributeError:
                 inst._cache = {}
                 inst._cache[func.__name__] = value
+        return value
+
+    callee.__cached_method__ = True
+    return callee
+
+def cached_function(func):
+    """Decorator that caches a function's return value each time it is called.
+    If called later with the same arguments, the cached value is returned, and
+    not re-evaluated.
+    """
+    def make_key(args, kwargs):
+        return HashableDict(__args__=args, **kwargs)
+    
+    @wraps(func)
+    def callee(*args, **kwargs):
+        key = make_key(args, kwargs)
+        try:
+            value = func._cache[key]
+        except (KeyError, AttributeError):
+            value = func(*args, **kwargs)
+            if not hasattr(func, '_cache'):
+                setattr(func, '_cache', {})
+            func._cache[key] = value
         return value
 
     callee.__cached_method__ = True
@@ -121,3 +144,11 @@ class LazyImmutableDict(object):
     def _create_value(self, key):
         raise NotImplementedError()
 
+# Borrowed from http://stackoverflow.com/questions/1151658/python-hashable-dicts
+class HashableDict(dict):
+    def __key(self):
+        return tuple((k,self[k]) for k in sorted(self))
+    def __hash__(self):
+        return hash(self.__key())
+    def __eq__(self, other):
+        return self.__key() == other.__key()
