@@ -70,8 +70,13 @@ def test_install_mixin__multiple_inheritence3():
     d = D()
     install_mixin(d, B, E)
     assert issubclass(d.__class__, E)
+    assert isinstance(d, E)
+    assert isinstance(d, D)
     install_mixin(d, D, D.D_E)
     assert issubclass(d.__class__, D.D_E)
-    
+    assert isinstance(d, E)
+    assert isinstance(d, D)
+    assert isinstance(d, D.D_E)
+
     d.foo()
     assert d.a == 1
