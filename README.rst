@@ -262,3 +262,18 @@ The *infi.pyutils.decorators* package contains a specially-crafted *wraps* imple
 Context Utilities
 -----------------
 *infi.pyutils.contexts* contains *contextmanager*, a drop-in replacement for *contextlib.contextmanager*, using the crafted *wraps* implementation from *decorators*.
+
+Import Utilities
+----------------
+*infi.pyutils.importing* contains **import_file**, a function for importing a module by its name::
+
+ >>> from infi.pyutils.importing import *
+ >>> import tempfile, os
+ >>> temp_dir = tempfile.mkdtemp()
+ >>> filename = os.path.join(temp_dir, "my_file.py")
+ >>> with open(filename, "wb") as f:
+ ...     f.write("a=2")
+ >>> module = import_file(filename)
+ >>> module.a
+ 2
+
