@@ -57,6 +57,9 @@ def _split_nonpackage_dir(path):
         nonpackage_dir = path
         module = []
     while os.path.isfile(os.path.join(nonpackage_dir, "__init__.py")):
+        if '.' in nonpackage_dir:
+            # we cannot import from such packages, stop traversing upwards...
+            break
         nonpackage_dir, current_component = os.path.split(nonpackage_dir)
         module.insert(0, current_component)
         _logger.debug("Now at %s, %s", nonpackage_dir, module)

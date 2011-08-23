@@ -48,6 +48,15 @@ class ImportingTest(unittest.TestCase):
         module1, module2 = self._import_and_verify(filenames_and_expected_values)
         self.assertNotEquals(_PACKAGE_NAME(module1),
                              _PACKAGE_NAME(module2))
+    def test__importing_dotted_name(self):
+        path_components = ["a", "b.c", "d"]
+        path = self.root
+        for c in path_components:
+            path = os.path.join(path, c)
+            os.makedirs(path)
+            _touch(path, "__init__.py")
+        filename, expected_value = self._create_module(path, "module.py")
+        self._import_and_verify([(filename, expected_value)])
     def test__importing_directory_no_init_file(self):
         with self.assertRaises(importing.NoInitFileFound):
             importing.import_file(self.root)
