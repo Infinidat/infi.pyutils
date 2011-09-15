@@ -2,6 +2,7 @@ from types import MethodType
 import copy
 import inspect
 import itertools
+import platform
 from .exceptions import (
     SignatureException,
     InvalidKeywordArgument,
@@ -9,6 +10,15 @@ from .exceptions import (
     MissingArguments,
     )
 from numbers import Number
+
+_IS_PY3 = platform.python_version() >= '3'
+if _IS_PY3:
+    iteritems = dict.items
+    izip = zip
+    basestring = str
+else:
+    izip = itertools.izip
+    iteritems = dict.iteritems
 
 _NO_DEFAULT = object()
 
@@ -33,7 +43,7 @@ class FunctionSignature(object):
     def _iter_args_and_defaults(self, args, defaults):
         defaults = [] if defaults is None else defaults
         filled_defaults = itertools.chain(itertools.repeat(_NO_DEFAULT, len(args) - len(defaults)), defaults)
-        return itertools.izip(args, filled_defaults)
+        return izip(args, filled_defaults)
 
     def _build_arguments(self):
         self._args = []
@@ -81,7 +91,7 @@ class FunctionSignature(object):
             returned[arg_name] = given_arg
 
     def _update_normalized_kwargs(self, returned, kwargs):
-        for arg_name, arg in kwargs.iteritems():
+        for arg_name, arg in iteritems(kwargs):
             if not isinstance(arg_name, basestring):
                 raise InvalidKeywordArgument("Invalid keyword argument %r" % (arg_name,))
             if arg_name in returned:
@@ -105,12 +115,18 @@ class FunctionSignature(object):
 
 
 def is_bound_method(obj):
-    return isinstance(obj, MethodType) and obj.im_self is not None
+    return isinstance(obj, MethodType) and _has_self(obj)
 def is_function(obj):
     return isinstance(obj, FunctionType) or isinstance(obj, BuiltinFunctionType)
 def is_class(obj):
     return isinstance(obj, type) or isinstance(obj, ClassType)
+def _has_self(f):
+    return _get_self(f) is not None
+def _get_self(f):
+    if _IS_PY3:
+        return f.__self__
+    return f.im_self
 def is_class_method(obj):
     if not is_bound_method(obj):
         return False
-    return is_class(obj.im_self)
+    return is_class(_get_self(obj))

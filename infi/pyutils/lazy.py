@@ -1,6 +1,7 @@
 # Adapted from http://wiki.python.org/moin/PythonDecoratorLibrary#Cached_Properties
 import itertools
 from .decorators import wraps
+from .python_compat import iteritems
 
 class cached_property(object):
     """Decorator for read-only properties evaluated only once.
@@ -78,7 +79,7 @@ def cached_function(func):
     not re-evaluated.
     """
     def make_key(args, kwargs):
-        return (tuple(args), frozenset(kwargs.iteritems()))
+        return (tuple(args), frozenset(iteritems(kwargs)))
     
     @wraps(func)
     def callee(*args, **kwargs):
@@ -117,7 +118,7 @@ def populate_cache(self, attributes_to_skip=[]):
             debug("getting attribute %s from %s", repr(key), repr(self))
             try:
                 _ = value()
-            except TypeError, e:
+            except TypeError as e:
                 exception(e)
 
 class LazyImmutableDict(object):

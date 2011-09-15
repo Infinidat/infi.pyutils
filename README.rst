@@ -271,8 +271,8 @@ Import Utilities
  >>> import tempfile, os
  >>> temp_dir = tempfile.mkdtemp()
  >>> filename = os.path.join(temp_dir, "my_file.py")
- >>> with open(filename, "wb") as f:
- ...     f.write("a=2")
+ >>> with open(filename, "w") as f:
+ ...     _ = f.write("a=2")
  >>> module = import_file(filename)
  >>> module.a
  2

@@ -2,6 +2,7 @@ import operator
 import functools
 from .functors.functor import Functor
 from .functors.always import Always
+from .python_compat import iteritems
 
 class Predicate(Functor):
     def __init__(self, func=None):
@@ -60,11 +61,11 @@ class ObjectAttributes(Predicate):
         super(ObjectAttributes, self).__init__()
         self._attributes = attributes
     def __call__(self, obj):
-        return all(getattr(obj, attr, _MISSING) == value for attr, value in self._attributes.iteritems())
+        return all(getattr(obj, attr, _MISSING) == value for attr, value in iteritems(self._attributes))
     def __repr__(self):
         return "<{0}>".format(
             ", ".join(
-                ".{0}=={1!r}".format(attr, value) for attr, value in self._attributes.iteritems()
+                ".{0}=={1!r}".format(attr, value) for attr, value in iteritems(self._attributes)
                 )
             )
 
@@ -73,7 +74,7 @@ class DictionaryItems(Predicate):
         super(DictionaryItems, self).__init__()
         self._items = items
     def __call__(self, obj):
-        for (attr, value) in self._items.iteritems():
+        for (attr, value) in iteritems(self._items):
             try:
                 if obj[attr] != value:
                     return False
@@ -83,6 +84,6 @@ class DictionaryItems(Predicate):
     def __repr__(self):
         return "<{0}>".format(
             ", ".join(
-                '[{0!r}]=={1!r}'.format(key, value) for key, value in self._items.iteritems()
+                '[{0!r}]=={1!r}'.format(key, value) for key, value in iteritems(self._items)
                 )
             )

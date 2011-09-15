@@ -1,7 +1,8 @@
-import unittest
+import platform
+from .test_utils import TestCase
 from infi.pyutils.method_map import MethodMap
 
-class MethodMapTest(unittest.TestCase):
+class MethodMapTest(TestCase):
     def test__method_map(self):
         class MyObj(object):
             METHODS = MethodMap()
@@ -39,7 +40,8 @@ class MethodMapTest(unittest.TestCase):
             def func_a(self):
                 return 'a'
         m = MyObj()
-        self.assertNotEquals(type(m), MyObj)
+        if platform.python_version() < '3':
+            self.assertNotEquals(type(m), MyObj)
         self.assertEquals(m.METHODS.get('a')(), 'a')
         self.assertEquals(m.METHODS['a'](), 'a')
     def test__method_map_with_decoration(self):

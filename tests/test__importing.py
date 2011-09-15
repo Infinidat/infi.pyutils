@@ -3,12 +3,12 @@ import uuid
 import tempfile
 import os
 import sys
-import unittest
+from .test_utils import TestCase
 from infi.pyutils import importing
 
-_filename_generator = ("module{}.py".format(i) for i in itertools.count())
+_filename_generator = ("module{0}.py".format(i) for i in itertools.count())
 
-class ImportingTest(unittest.TestCase):
+class ImportingTest(TestCase):
     def setUp(self):
         super(ImportingTest, self).setUp()
         self._old_sys_modules = sys.modules.copy()
@@ -86,8 +86,8 @@ class ImportingTest(unittest.TestCase):
         if filename is None:
             filename = next(_filename_generator)
         full_filename = os.path.join(directory, filename)
-        with open(full_filename, "wb") as f:
-            f.write("value = {!r}".format(id))
+        with open(full_filename, "w") as f:
+            f.write("value = {0!r}".format(id))
         return full_filename, id
     def _import_and_verify(self, filenames_and_expected_values):
         returned = []
@@ -98,7 +98,7 @@ class ImportingTest(unittest.TestCase):
         return returned
 
 def _touch(*p):
-    with open(os.path.join(*p), "ab"):
+    with open(os.path.join(*p), "a"):
         pass
 
 def _PACKAGE_NAME(m):

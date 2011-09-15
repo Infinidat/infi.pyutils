@@ -1,6 +1,8 @@
 import functools
 from .functors import Identity
-from types import MethodType
+from .python_compat import get_underlying_function
+from .python_compat import create_bound_method
+import platform
 
 class MethodMap(object):
     def __init__(self, decorator=Identity):
@@ -27,16 +29,15 @@ class Binder(object):
             return default
         function = self._map[key]
         if isinstance(function, staticmethod):
-            return function.__func__
+            return get_underlying_function(function)
         if isinstance(function, classmethod):
             returned_self = self._instance
-            function = function.__func__
+            function = get_underlying_function(function)
         else:
             returned_self = self._instance.__class__
-        return MethodType(
+        return create_bound_method(
             function,
             returned_self,
-            self._instance.__class__
             )
         return self._map[key]
     def __getitem__(self, key):

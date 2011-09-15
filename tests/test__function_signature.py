@@ -1,5 +1,5 @@
 import time
-from unittest import TestCase
+from .test_utils import TestCase
 from infi.pyutils.function_signature import FunctionSignature
 from infi.pyutils.exceptions import SignatureException, InvalidKeywordArgument, UnknownArguments, MissingArguments
 
@@ -38,7 +38,7 @@ class SignatureTest(TestCase):
         self._test_missing_arguments(sig, expected_signature)
     def _test_missing_arguments(self, signature, expected_signature):
         missing = dict((x[0], x[1]) for x in expected_signature)
-        missing.pop(missing.keys()[0])
+        missing.pop(list(missing)[0])
         with self.assertRaises(MissingArguments):
             signature.get_normalized_args((), missing)
     def _test_unknown_arguments(self, signature, expected_signature):

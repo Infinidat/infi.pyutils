@@ -1,5 +1,5 @@
-import unittest
 import time
+from . import test_utils
 from collections import defaultdict
 from infi.pyutils.lazy import cached_property, cached_method, clear_cache, populate_cache, cached_function
 
@@ -19,7 +19,7 @@ class Subject(object):
     cached_method_1 = cached_method(orig_method)
     cached_method_2 = cached_method(orig_method)
 
-class TestCase(unittest.TestCase):
+class TestCase(test_utils.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
         self.subject = Subject()
@@ -53,7 +53,7 @@ class CachedMethodTest(TestCase):
 def func():
     return time.time()
 
-class CachedFunctionTest(unittest.TestCase):
+class CachedFunctionTest(TestCase):
     def test_cache_works(self):
         before = func()
         after = func()

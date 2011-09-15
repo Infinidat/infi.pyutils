@@ -1,4 +1,4 @@
-from unittest import TestCase
+from .test_utils import TestCase
 import os
 import doctest
 

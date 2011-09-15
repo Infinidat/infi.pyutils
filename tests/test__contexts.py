@@ -1,4 +1,4 @@
-import unittest
+from .test_utils import TestCase
 import inspect
 from infi.pyutils.contexts import contextmanager
 
@@ -7,7 +7,7 @@ def example_context_manager(a, b, c):
     """context_manager_docstring"""
     yield 2
 
-class ContextmanagerTestCase(unittest.TestCase):
+class ContextmanagerTestCase(TestCase):
     def test__contextmanager(self):
         self.assertEquals(example_context_manager.__doc__, "context_manager_docstring")
         self.assertEquals(example_context_manager.__name__, "example_context_manager")
