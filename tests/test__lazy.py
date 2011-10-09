@@ -1,6 +1,7 @@
 import unittest
+import time
 from collections import defaultdict
-from infi.pyutils.lazy import cached_property, cached_method, clear_cache, populate_cache
+from infi.pyutils.lazy import cached_property, cached_method, clear_cache, populate_cache, cached_function
 
 class Subject(object):
     def __init__(self):
@@ -47,3 +48,20 @@ class CachedMethodTest(TestCase):
         self.assertEquals(self.subject.cached_method_1(1), 1)
         clear_cache(self.subject)
         self.assertEquals(self.subject.cached_method_1(1), 2)
+
+@cached_function
+def func():
+    return time.time()
+
+class CachedFunctionTest(unittest.TestCase):
+    def test_cache_works(self):
+        before = func()
+        after = func()
+        self.assertEqual(before, after)
+
+    def test_clear_cache_works(self):
+        before = func()
+        clear_cache(func)
+        after = func()
+        self.assertNotEqual(before, after)
+
