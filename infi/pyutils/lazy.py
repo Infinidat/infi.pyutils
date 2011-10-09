@@ -92,6 +92,7 @@ def cached_function(func):
             func._cache[key] = value
         return value
 
+    callee._cache = func._cache = dict()
     callee.__cached_method__ = True
     return callee
 
