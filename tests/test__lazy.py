@@ -65,3 +65,11 @@ class CachedFunctionTest(unittest.TestCase):
         after = func()
         self.assertNotEqual(before, after)
 
+    def test_cache_works_after_cleanup(self):
+        first = func()
+        clear_cache(func)
+        second = func()
+        third = func()
+        self.assertNotEqual(first, second)
+        self.assertEqual(second, third)
+
