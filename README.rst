@@ -5,6 +5,25 @@ Overview
 Contents
 ========
 
+Misc. Utilities
+---------------
+
+*renumerate* is like *enumerate*, only backwards. This is useful for popping from a list in-place::
+
+  >>> from infi.pyutils import renumerate
+  >>> l = [1, 2, 3, 4]
+  >>> for index, element in renumerate(l):
+  ...     if element % 2 == 0:
+  ...         unused = l.pop(index)
+  >>> l
+  [1, 3]
+  
+This also works for generators (although slightly less efficient):
+
+  >>> x = list(renumerate(i for i in range(3)))
+  >>> x
+  [(2, 2), (1, 1), (0, 0)]
+  
 Reflection
 ----------
 
