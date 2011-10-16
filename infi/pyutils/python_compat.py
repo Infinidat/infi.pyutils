@@ -20,8 +20,10 @@ def _get_underlying_classmethod_function(f):
 
 if _IS_PYTHON_3:
     iteritems = dict.items
+    xrange = range
 else:
     iteritems = dict.iteritems
+    from __builtin__ import xrange
 
 if _IS_PYTHON_3:
     create_bound_method = types.MethodType

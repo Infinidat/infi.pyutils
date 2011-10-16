@@ -1,4 +1,5 @@
 import itertools
+from .python_compat import xrange
 
 def renumerate(seq):
     """Like enumerate(), only in reverse order. Useful for filtering a list in place"""
