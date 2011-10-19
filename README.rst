@@ -23,6 +23,18 @@ This also works for generators (although slightly less efficient):
   >>> x = list(renumerate(i for i in range(3)))
   >>> x
   [(2, 2), (1, 1), (0, 0)]
+
+*infi.pyutils* provides a set of mixin classes to make objects comparable and hashable based on a single key::
+
+  >>> from infi.pyutils import ComparableByKey
+  >>> class MyComparableType(ComparableByKey):
+  ...     def __init__(self, value):
+  ...         super(MyComparableType, self).__init__()
+  ...         self.value = value
+  ...     def _get_key(self):
+  ...         return self.value
+  >>> MyComparableType("c") > MyComparableType("b")
+  True
   
 Reflection
 ----------
