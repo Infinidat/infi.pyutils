@@ -1,3 +1,3 @@
 from .__version__ import __version__
-from .misc import *
+from .iteration import *
 from .keyed_object import *

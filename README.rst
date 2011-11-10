@@ -5,8 +5,47 @@ Overview
 Contents
 ========
 
-Misc. Utilities
+Iteration Utilities
 ---------------
+
+iterate
++++++++
+
+*iterate* is a django-style for loop over elements, yielding convenient information about the iterated collection::
+
+ >>> from __future__ import print_function
+ >>> from infi.pyutils import iterate
+ >>> for x in iterate(range(3)):
+ ...     print(x.element)
+ ...     print(x.first)
+ ...     print(x.counter0)
+ ...     print(x.counter1)
+ ...     print(x.last)
+ 0
+ True
+ 0
+ 1
+ False
+ 1
+ False
+ 1
+ 2
+ False
+ 2
+ False
+ 2
+ 3
+ True
+
+This even works for generators and other iterables::
+
+ >>> list(iterate(i for i in range(3)))[-1].last
+ True
+
+ .. note:: For iterated collections which are not simple ones (i.e. generators or other types), some prefetching is made to determing last elements
+ 
+renumerate
+++++++++++
 
 *renumerate* is like *enumerate*, only backwards. This is useful for popping from a list in-place::
 

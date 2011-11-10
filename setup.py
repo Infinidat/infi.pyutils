@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 with open(os.path.join(os.path.dirname(__file__), "infi", "pyutils", "__version__.py")) as version_file:
     exec(version_file.read())
 
-install_requires = []
+install_requires = ["bunch"]
 if platform.python_version() < '2.7':
     install_requires.append('unittest2')
 
