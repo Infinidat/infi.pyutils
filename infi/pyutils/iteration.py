@@ -14,12 +14,11 @@ def iterate(collection):
             break
         prefetched = next(iterator)
         yield Bunch(
-            element = element,
             counter0 = index,
             counter1 = index + 1,
             first = (index == 0),
             last  = prefetched[1] is _NOTHING
-            )
+            ), element
 
 
 

@@ -15,12 +15,12 @@ iterate
 
  >>> from __future__ import print_function
  >>> from infi.pyutils import iterate
- >>> for x in iterate(range(3)):
- ...     print(x.element)
- ...     print(x.first)
- ...     print(x.counter0)
- ...     print(x.counter1)
- ...     print(x.last)
+ >>> for iteration, element in iterate(range(3)):
+ ...     print(element)
+ ...     print(iteration.first)
+ ...     print(iteration.counter0)
+ ...     print(iteration.counter1)
+ ...     print(iteration.last)
  0
  True
  0
@@ -39,7 +39,7 @@ iterate
 
 This even works for generators and other iterables::
 
- >>> list(iterate(i for i in range(3)))[-1].last
+ >>> list(iterate(i for i in range(3)))[-1][0].last
  True
 
  .. note:: For iterated collections which are not simple ones (i.e. generators or other types), some prefetching is made to determing last elements
