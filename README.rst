@@ -347,3 +347,32 @@ Import Utilities
  >>> module.a
  2
 
+Reference Counters
+------------------
+*infi.pyutils.reference_counter* is an implementation of a reference counter with dependency support::
+
+ >>> from infi.pyutils.reference_counter import ReferenceCounter
+ >>> r = ReferenceCounter()
+ >>> r.get_reference_count()
+ 0
+ >>> r.add_reference()
+ >>> r.get_reference_count()
+ 1
+
+Several reference counters can be chained via dependency::
+
+ >>> r1 = ReferenceCounter()
+ >>> r2 = ReferenceCounter()
+ >>> r1.depend_on_counter(r2)
+ >>> r1.add_reference()
+ >>> r2.get_reference_count()
+ 1
+
+Also, as a convenience, if you add a dependency to a counter that already has a nonzero refcount, the dependent counter is automatically increased as well::
+
+ >>> r1 = ReferenceCounter()
+ >>> r1.add_reference()
+ >>> r2 = ReferenceCounter()
+ >>> r1.depend_on_counter(r2)
+ >>> r2.get_reference_count()
+ 1
