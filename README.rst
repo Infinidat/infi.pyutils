@@ -376,3 +376,14 @@ Also, as a convenience, if you add a dependency to a counter that already has a 
  >>> r1.depend_on_counter(r2)
  >>> r2.get_reference_count()
  1
+
+You can add a callback to be called when the reference count drops to zero::
+
+ >>> r1 = ReferenceCounter()
+ >>> def callback(r):
+ ...     assert r is r1
+ ...     print "called!"
+ >>> r1.add_zero_refcount_callback(callback)
+ >>> r1.add_reference()
+ >>> r1.remove_reference()
+ called!

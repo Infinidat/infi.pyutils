@@ -51,6 +51,20 @@ class ReferenceCounterTest(TestCase):
         with self.assertRaises(MyException):
             refcounter.remove_reference()
         self.assertEquals(refcounter.get_reference_count(), 1)
+    def test__reference_drop_callback(self):
+        refcounter = MyReferenceCounter()
+        self.called = False
+        def _callback(r):
+            self.assertIs(r, refcounter)
+            self.called = True
+        refcounter.add_zero_refcount_callback(_callback)
+        refcounter.add_reference()
+        refcounter.add_reference()
+        self.assertFalse(self.called)
+        refcounter.remove_reference()
+        self.assertFalse(self.called)
+        refcounter.remove_reference()
+        self.assertTrue(self.called)
 class DependentReferenceCounterTest(TestCase):
     def test__dependent_reference_counter(self):
         ref1 = ReferenceCounter()
