@@ -43,7 +43,7 @@ This even works for generators and other iterables::
  True
 
  .. note:: For iterated collections which are not simple ones (i.e. generators or other types), some prefetching is made to determing last elements
- 
+
 renumerate
 ++++++++++
 
@@ -56,7 +56,7 @@ renumerate
   ...         unused = l.pop(index)
   >>> l
   [1, 3]
-  
+
 This also works for generators (although slightly less efficient):
 
   >>> x = list(renumerate(i for i in range(3)))
@@ -74,7 +74,7 @@ This also works for generators (although slightly less efficient):
   ...         return self.value
   >>> MyComparableType("c") > MyComparableType("b")
   True
-  
+
 Reflection
 ----------
 
@@ -137,7 +137,7 @@ Misc. Functors
   5
   >>> a(1, 2, 3)
   5
-  
+
 *Identity* is a functor that always returns its single argument:
 ::
 
@@ -163,7 +163,7 @@ You can also use it as a context manager that does nothing::
 
   >>> with PASS:
   ...     pass
-  
+
 Predicates
 ++++++++++
 Predicates are functors taking arguments and returning True/False
@@ -190,7 +190,7 @@ AlwaysTrue and AlwaysFalse are available:
   False
   >>> AlwaysFalse()
   False
-  
+
 Identity:
 ::
 
@@ -256,7 +256,7 @@ Dictionary items check:
    >>> match = DictionaryItems(a=1)
    >>> match
    <['a']==1>
-   >>> 
+   >>>
    >>> match(d)
    True
    >>> match(dict(a=2, b=2))
@@ -265,8 +265,8 @@ Dictionary items check:
    False
    >>> match(dict(b=2))
    False
-   
-   
+
+
 Logical aggregations are done with And, Or, Not:
 ::
 
@@ -274,7 +274,7 @@ Logical aggregations are done with And, Or, Not:
   >>> obj = object()
   >>> is_none_or_obj = Or(Identity(obj), Identity(None))
   >>> is_none_or_obj #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-  Or(<is <object object at 0x...>>, <is None>) 
+  Or(<is <object object at 0x...>>, <is None>)
   >>> is_none_or_obj(obj)
   True
   >>> is_none_or_obj(None)
@@ -323,7 +323,7 @@ cached_property and cached_method
  1
  >>> m.get_value()
  1
- 
+
 Decorator Utilities
 -------------------
 The *infi.pyutils.decorators* package contains a specially-crafted *wraps* implementation (functools.wraps counterpart) preserving information on the originally wrapped function. It also patches *inspect.getargspec* and IPython's similar mechanisms in order to display proper argument information on wrapped functions. It is therefore recommended to use it instead of the default ones.
@@ -387,3 +387,20 @@ You can add a callback to be called when the reference count drops to zero::
  >>> r1.add_reference()
  >>> r1.remove_reference()
  called!
+
+Misc. Utilities
+---------------
+
+recursive_getattr
++++++++++++++++++
+
+ >>> from infi.pyutils import recursive_getattr
+ >>> class Object(object):
+ ...     pass
+ >>> a = Object()
+ >>> a.b = Object()
+ >>> a.b.c = 2
+ >>> recursive_getattr(a, 'b.c')
+ 2
+ >>> recursive_getattr(a, 'b.d', 4)
+ 4
