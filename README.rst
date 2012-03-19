@@ -404,3 +404,26 @@ recursive_getattr
  2
  >>> recursive_getattr(a, 'b.d', 4)
  4
+
+Reprify
++++++++
+
+*Reprify* is intended to force a __repr__/__str__ on objects that don't properly support them::
+
+ >>> from infi.pyutils import Reprify
+ >>> class SomeObject(object):
+ ...     pass
+ >>> some_obj = SomeObject()
+ >>> s = Reprify(some_obj, repr='some_repr_here', str='some_str_here')
+ >>> repr(s)
+ 'some_repr_here'
+ >>> str(s)
+ 'some_str_here'
+
+While still preserving the identity and attributes::
+
+ >>> some_obj.attr = 2
+ >>> s.attr
+ 2
+ >>> isinstance(s, SomeObject)
+ True
