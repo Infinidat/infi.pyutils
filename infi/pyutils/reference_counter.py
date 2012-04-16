@@ -57,7 +57,7 @@ class ReferenceCounter(object):
                 self._reference += 1
                 raise
             self._decrease_dependents()
-            for callback in self._zero_refcount_callbacks:
+            for callback in list(self._zero_refcount_callbacks):
                 callback(self)
     @contextmanager
     def get_reference_context(self):
