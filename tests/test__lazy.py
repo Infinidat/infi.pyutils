@@ -16,6 +16,15 @@ class Subject(object):
         """some docstring"""
         self._counters['orig_method'][value] += 1
         return self._counters['orig_method'][value]
+    @cached_method
+    def cached_method_3(self, value):
+        self._counter += 1
+        return self._counter
+    @cached_method
+    def cached_method_4(self):
+        self._counter = 1
+        return self._counter
+
     cached_method_1 = cached_method(orig_method)
     cached_method_2 = cached_method(orig_method)
 
@@ -43,11 +52,39 @@ class CachedMethodTest(TestCase):
         self.assertTrue(self.subject.cached_method_2.__name__ == self.subject.cached_method_2.__name__ == self.subject.orig_method.__name__)
     def test__cached_method(self):
         self.assertEquals(self.subject.cached_method_1(1), 1)
+        self.assertEquals(self.subject.cached_method_1(1), 1)
         self.assertEquals(self.subject.cached_method_2(1), 2)
     def test__clear_cache(self):
         self.assertEquals(self.subject.cached_method_1(1), 1)
+        self.assertEquals(self.subject.cached_method_1(1), 1)
         clear_cache(self.subject)
         self.assertEquals(self.subject.cached_method_1(1), 2)
+    def test__args(self):
+        clear_cache(self.subject)
+        self.assertEquals(self.subject.cached_method_3(1), 1)
+        self.assertEquals(self.subject.cached_method_3(1), 1)
+        self.assertEquals(self.subject.cached_method_3(2), 2)
+        self.assertEquals(self.subject.cached_method_3(2), 2)
+    def test__mutable_args(self):
+        clear_cache(self.subject)
+        self.assertEquals(self.subject.cached_method_3([1]), 1)
+        self.assertEquals(self.subject.cached_method_3([1]), 2)
+    def test__kwargs(self):
+        clear_cache(self.subject)
+        self.assertEquals(self.subject.cached_method_3(value=1), 1)
+        self.assertEquals(self.subject.cached_method_3(value=1), 1)
+        self.assertEquals(self.subject.cached_method_3(value=2), 2)
+        self.assertEquals(self.subject.cached_method_3(value=2), 2)
+    def test__mutable_kwargs(self):
+        clear_cache(self.subject)
+        self.assertEquals(self.subject.cached_method_3(value=[1]), 1)
+        self.assertEquals(self.subject.cached_method_3(value=[1]), 2)
+    def test__no_args_and_kwargs(self):
+        clear_cache(self.subject)
+        self.assertEquals(self.subject.cached_method_4(), 1)
+        self.assertEquals(self.subject.prop, 2)
+        self.assertEquals(self.subject.cached_method_4(), 1)
+        clear_cache(self.subject)
 
 @cached_function
 def func():

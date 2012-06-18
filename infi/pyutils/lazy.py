@@ -2,6 +2,9 @@
 import itertools
 from .decorators import wraps
 from .python_compat import iteritems
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 class cached_property(object):
     """Decorator for read-only properties evaluated only once.
@@ -51,6 +54,18 @@ class cached_property(object):
 
 _cached_method_id_allocator = itertools.count()
 
+def _get_cache_entry(method_id, *args, **kwargs):
+    if len(args) + len(kwargs) == 0:
+        return method_id
+    try:
+        kwargs_keys = kwargs.keys()
+        kwargs_keys.sort()
+        key = (method_id,) + args + tuple([kwargs[key] for key in kwargs_keys])
+        _ = {key: None}
+        return key
+    except TypeError:
+        return None
+
 def cached_method(func):
     """Decorator that caches a method's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
@@ -59,15 +74,19 @@ def cached_method(func):
     method_id = next(_cached_method_id_allocator)
     @wraps(func)
     def callee(inst, *args, **kwargs):
+        key = _get_cache_entry(method_id, *args, **kwargs)
+        if key is None:
+            logger.debug("Passed arguments to {} are mutable, so the returned value will not be cahced".format(func.__name__))
+            return func(inst, *args, **kwargs)
         try:
-            value = inst._cache[method_id]
+            value = inst._cache[key]
         except (KeyError, AttributeError):
             value = func(inst, *args, **kwargs)
             try:
-                inst._cache[method_id] = value
+                inst._cache[key] = value
             except AttributeError:
                 inst._cache = {}
-                inst._cache[method_id] = value
+                inst._cache[key] = value
         return value
 
     callee.__cached_method__ = True
@@ -110,16 +129,15 @@ def populate_cache(self, attributes_to_skip=[]):
     - The calling of cached methods is done without any arguments, and catches TypeError exceptions
       for the case a cached method requires arguments. The exception is logged."""
     from inspect import getmembers
-    from logging import debug, exception
     for key, value in getmembers(self):
         if key in attributes_to_skip:
             continue
         if hasattr(value, "__cached_method__"):
-            debug("getting attribute %s from %s", repr(key), repr(self))
+            logger.debug("getting attribute %s from %s", repr(key), repr(self))
             try:
                 _ = value()
             except TypeError as e:
-                exception(e)
+                logger.exception(e)
 
 class LazyImmutableDict(object):
     """ Use this object when you have a list of keys but fetching the values is expensive,
