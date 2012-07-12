@@ -43,9 +43,6 @@ class ReferenceCounter(object):
                 raise
             else:
                 done.append(c)
-    def _decrease_dependents(self):
-        for c in self._depends_on:
-            c.remove_reference()
     def remove_reference(self):
         if self._reference <= 0:
             raise InvalidReferenceCount()
