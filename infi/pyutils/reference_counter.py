@@ -54,8 +54,15 @@ class ReferenceCounter(object):
                 self._reference += 1
                 raise
             self._decrease_dependents()
+            thrown = None
             for callback in list(self._zero_refcount_callbacks):
-                callback(self)
+                try:
+                    callback(self)
+                except BaseException as e:
+                    if thrown is None:
+                        thrown = e
+            if thrown is not None:
+                raise thrown
     @contextmanager
     def get_reference_context(self):
         self.add_reference()
