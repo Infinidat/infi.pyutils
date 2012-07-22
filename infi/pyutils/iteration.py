@@ -1,4 +1,4 @@
-from bunch import Bunch
+from infi.bunch import Bunch
 import itertools
 from .python_compat import xrange
 
