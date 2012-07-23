@@ -18,12 +18,8 @@ def _get_underlying_classmethod_function(f):
         return TemporaryClass.func
     return TemporaryClass.func.im_func
 
-if _IS_PYTHON_3:
-    iteritems = dict.items
-    xrange = range
-else:
-    iteritems = dict.iteritems
-    from __builtin__ import xrange
+from six.moves import xrange
+from six import iteritems
 
 if _IS_PYTHON_3:
     create_bound_method = types.MethodType

@@ -1,4 +1,3 @@
-from infi.bunch import Bunch
 import itertools
 from .python_compat import xrange
 
@@ -13,14 +12,20 @@ def iterate(collection):
         if element is _NOTHING:
             break
         prefetched = next(iterator)
-        yield Bunch(
+        yield Iteration(
             counter0 = index,
             counter1 = index + 1,
             first = (index == 0),
             last  = prefetched[1] is _NOTHING
             ), element
 
-
+class Iteration(object):
+    def __init__(self, counter0, counter1, first, last):
+        super(Iteration, self).__init__()
+        self.counter0 = counter0
+        self.counter1 = counter1
+        self.first = first
+        self.last = last
 
 def renumerate(seq):
     """Like enumerate(), only in reverse order. Useful for filtering a list in place"""
