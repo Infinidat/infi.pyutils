@@ -382,7 +382,7 @@ You can add a callback to be called when the reference count drops to zero::
  >>> r1 = ReferenceCounter()
  >>> def callback(r):
  ...     assert r is r1
- ...     print "called!"
+ ...     print("called!")
  >>> r1.add_zero_refcount_callback(callback)
  >>> r1.add_reference()
  >>> r1.remove_reference()

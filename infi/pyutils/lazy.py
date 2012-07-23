@@ -58,7 +58,7 @@ def _get_cache_entry(method_id, *args, **kwargs):
     if len(args) + len(kwargs) == 0:
         return method_id
     try:
-        kwargs_keys = kwargs.keys()
+        kwargs_keys = list(kwargs.keys())
         kwargs_keys.sort()
         key = (method_id,) + args + tuple([kwargs[key] for key in kwargs_keys])
         _ = {key: None}
