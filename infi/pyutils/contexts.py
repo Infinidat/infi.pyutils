@@ -1,14 +1,22 @@
 from .decorators import wraps
 import platform
 
-_IS_PY3 = platform.python_version() >= '3'
+_PYTHON_VERSION = platform.python_version()
 
-if _IS_PY3:
+if _PYTHON_VERSION >= '3':
     from contextlib import _GeneratorContextManager
 else:
     from contextlib import GeneratorContextManager as _GeneratorContextManager
-def contextmanager(func):
-    @wraps(func)
-    def helper(*args, **kwds):
-        return _GeneratorContextManager(func(*args, **kwds))
-    return helper
+
+if _PYTHON_VERSION >= '3.2.2':
+    def contextmanager(func):
+        @wraps(func)
+        def helper(*args, **kwds):
+            return _GeneratorContextManager(func, *args, **kwds)
+        return helper
+else:
+    def contextmanager(func):
+        @wraps(func)
+        def helper(*args, **kwds):
+            return _GeneratorContextManager(func(*args, **kwds))
+        return helper
