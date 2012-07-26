@@ -1,4 +1,7 @@
+import logging
 from contextlib import contextmanager
+
+_logger = logging.getLogger(__name__)
 
 class InvalidReferenceCount(Exception):
     pass
@@ -59,6 +62,7 @@ class ReferenceCounter(object):
                 try:
                     callback(self)
                 except BaseException as e:
+                    _logger.debug("Exception caught during remove_reference", exc_info=True)
                     if thrown is None:
                         thrown = e
             if thrown is not None:
