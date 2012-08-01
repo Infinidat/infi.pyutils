@@ -99,7 +99,7 @@ def cached_function(func):
     """
     def make_key(args, kwargs):
         return (tuple(args), frozenset(iteritems(kwargs)))
-    
+
     @wraps(func)
     def callee(*args, **kwargs):
         key = make_key(args, kwargs)
