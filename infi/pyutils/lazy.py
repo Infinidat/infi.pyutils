@@ -76,7 +76,7 @@ def cached_method(func):
     def callee(inst, *args, **kwargs):
         key = _get_cache_entry(method_id, *args, **kwargs)
         if key is None:
-            logger.debug("Passed arguments to {0} are mutable, so the returned value will not be cahced".format(func.__name__))
+            logger.debug("Passed arguments to {0} are mutable, so the returned value will not be cached".format(func.__name__))
             return func(inst, *args, **kwargs)
         try:
             value = inst._cache[key]
