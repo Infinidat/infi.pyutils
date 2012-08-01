@@ -3,6 +3,7 @@ import itertools
 from .decorators import wraps
 from .python_compat import iteritems
 from logging import getLogger
+from types import MethodType, FunctionType
 
 logger = getLogger(__name__)
 
@@ -54,7 +55,7 @@ class cached_property(object):
 
 _cached_method_id_allocator = itertools.count()
 
-def _get_cache_entry(method_id, *args, **kwargs):
+def _get_instancemethod_cache_entry(method_id, *args, **kwargs):
     if len(args) + len(kwargs) == 0:
         return method_id
     try:
@@ -74,7 +75,7 @@ def cached_method(func):
     method_id = next(_cached_method_id_allocator)
     @wraps(func)
     def callee(inst, *args, **kwargs):
-        key = _get_cache_entry(method_id, *args, **kwargs)
+        key = _get_instancemethod_cache_entry(method_id, *args, **kwargs)
         if key is None:
             logger.debug("Passed arguments to {0} are mutable, so the returned value will not be cached".format(func.__name__))
             return func(inst, *args, **kwargs)
@@ -90,19 +91,20 @@ def cached_method(func):
         return value
 
     callee.__cached_method__ = True
+    callee.__method_id__ = method_id
     return callee
+
+def _get_function_cache_entry(args, kwargs):
+    return (tuple(args), frozenset(iteritems(kwargs)))
 
 def cached_function(func):
     """Decorator that caches a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
     not re-evaluated.
     """
-    def make_key(args, kwargs):
-        return (tuple(args), frozenset(iteritems(kwargs)))
-
     @wraps(func)
     def callee(*args, **kwargs):
-        key = make_key(args, kwargs)
+        key = _get_function_cache_entry(args, kwargs)
         try:
             value = func._cache[key]
         except (KeyError, AttributeError):
@@ -119,6 +121,18 @@ def cached_function(func):
 def clear_cache(self):
     if hasattr(self, '_cache'):
         getattr(self, '_cache').clear()
+
+def clear_cached_entry(self, *args, **kwargs):
+    if isinstance(self, MethodType) and getattr(self, '__cached_method__', False):
+        if self.im_self is None:
+            return
+        key = _get_instancemethod_cache_entry(self.__method_id__, *args, **kwargs)
+        self = self.im_self
+    elif isinstance(self, FunctionType) and getattr(self, '__cached_method__', False):
+        key = _get_function_cache_entry(args, kwargs)
+    else:
+        return
+    _ = getattr(self, '_cache', {}).pop(key, None)
 
 def populate_cache(self, attributes_to_skip=[]):
     """this method attempts to get all the lazy cached properties and methods

@@ -1,7 +1,8 @@
 import time
 from . import test_utils
 from collections import defaultdict
-from infi.pyutils.lazy import cached_property, cached_method, clear_cache, populate_cache, cached_function
+from infi.pyutils.lazy import cached_property, cached_method, populate_cache, cached_function
+from infi.pyutils.lazy import clear_cache, clear_cached_entry
 
 class Subject(object):
     def __init__(self):
@@ -109,4 +110,58 @@ class CachedFunctionTest(TestCase):
         third = func()
         self.assertNotEqual(first, second)
         self.assertEqual(second, third)
+
+class Counter(object):
+    def __init__(self):
+        super(Counter, self).__init__()
+        self._count = 0
+
+    @cached_method
+    def count(self):
+        self._count += 1
+        return self._count
+
+    @cached_method
+    def sum(self, num):
+        return num + self._count
+
+
+class ClearCachedEntryTest(TestCase):
+    def test_on_instance_method__no_args(self):
+        counter = Counter()
+        method = counter.count
+        self.assertEquals(method(), 1)
+        self.assertEquals(method(), 1)
+        clear_cached_entry(method)
+        self.assertEquals(method(), 2)
+
+    def test_on_instance_method__with_args(self):
+        counter = Counter()
+        method = counter.sum
+        self.assertEquals(method(1), 1)
+        counter.count()
+        self.assertEquals(method(1), 1)
+        clear_cached_entry(method, 1)
+        self.assertEquals(method(1), 2)
+
+    def test_on_function__with_args(self):
+        count = 0
+        @cached_function
+        def sum(num):
+            return num + count
+        self.assertEquals(sum(1), 1)
+        self.assertEquals(sum(1), 1)
+        count = 2
+        self.assertEquals(sum(1), 1)
+        clear_cached_entry(sum, 1)
+        self.assertEquals(sum(1), 3)
+
+    def test_clear_cached_entry_with_mismatching_args_does_nothing(self):
+        counter = Counter()
+        method = counter.sum
+        self.assertEquals(method(1), 1)
+        counter.count()
+        self.assertEquals(method(1), 1)
+        clear_cached_entry(method, 3)
+        self.assertEquals(method(1), 1)
 
