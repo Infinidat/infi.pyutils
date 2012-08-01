@@ -124,10 +124,11 @@ def clear_cache(self):
 
 def clear_cached_entry(self, *args, **kwargs):
     if isinstance(self, MethodType) and getattr(self, '__cached_method__', False):
-        if self.im_self is None:
+        method = self
+        self = getattr(method, 'im_self', getattr(method, '__self__', None))
+        if self is None:
             return
-        key = _get_instancemethod_cache_entry(self.__method_id__, *args, **kwargs)
-        self = self.im_self
+        key = _get_instancemethod_cache_entry(method.__method_id__, *args, **kwargs)
     elif isinstance(self, FunctionType) and getattr(self, '__cached_method__', False):
         key = _get_function_cache_entry(args, kwargs)
     else:
