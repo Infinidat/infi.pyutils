@@ -333,6 +333,7 @@ Context Utilities
 -----------------
 *infi.pyutils.contexts* contains *contextmanager*, a drop-in replacement for *contextlib.contextmanager*, using the crafted *wraps* implementation from *decorators*.
 
+<<<<<<< HEAD
 Import Utilities
 ----------------
 *infi.pyutils.importing* contains **import_file**, a function for importing a module by its name::
@@ -427,3 +428,7 @@ While still preserving the identity and attributes::
  2
  >>> isinstance(s, SomeObject)
  True
+
+Exception Retry Utilities
+-------------------------
+The *infi.pyutils.retry* package provides a mechanism to easily define when and how to retry a failed operation. It allows you to wrap methods in your class and plug in an error handling strategy (infinite retries, retry N times, expontential decay timeout, etc.) without changing your code.
