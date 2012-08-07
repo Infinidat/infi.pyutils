@@ -262,3 +262,7 @@ The *infi.pyutils.decorators* package contains a specially-crafted *wraps* imple
 Context Utilities
 -----------------
 *infi.pyutils.contexts* contains *contextmanager*, a drop-in replacement for *contextlib.contextmanager*, using the crafted *wraps* implementation from *decorators*.
+
+Error Retry Utilities
+---------------------
+The *infi.pyutils.retry* package provides a mechanism to easily define when and how to retry a failed operation. It allows you to wrap methods in your class and plug in an error handling strategy (infinite retries, retry N times, expontential decay timeout, etc.) without changing your code.
