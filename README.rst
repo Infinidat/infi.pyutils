@@ -333,7 +333,6 @@ Context Utilities
 -----------------
 *infi.pyutils.contexts* contains *contextmanager*, a drop-in replacement for *contextlib.contextmanager*, using the crafted *wraps* implementation from *decorators*.
 
-<<<<<<< HEAD
 Import Utilities
 ----------------
 *infi.pyutils.importing* contains **import_file**, a function for importing a module by its name::
