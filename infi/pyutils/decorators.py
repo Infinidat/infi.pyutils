@@ -26,13 +26,13 @@ def _get_innner_func(f):
 
 _PATCHED_NAME_PREFIX = "_infi_patched_"
 
-def monkey_patch(module, name, replacement):
+def _monkey_patch(module, name, replacement):
     original_name = _PATCHED_NAME_PREFIX + name
     if getattr(module, original_name, None) is None:
         setattr(module, original_name, getattr(module, name))
         setattr(module, name, replacement)
 
-monkey_patch(inspect, "getargspec", inspect_getargspec_patch)
+_monkey_patch(inspect, "getargspec", inspect_getargspec_patch)
 
 _ipython_inspect_module = None
 try:
@@ -46,4 +46,4 @@ except ImportError:
         pass
 
 if _ipython_inspect_module is not None:
-    monkey_patch(_ipython_inspect_module, "getargspec", ipython_getargspec_patch)
+    _monkey_patch(_ipython_inspect_module, "getargspec", ipython_getargspec_patch)
