@@ -14,7 +14,10 @@ _logger = logging.getLogger("infi.pyutils.importing")
 
 def import_file(filename):
     module_name = _setup_module_name_for_import(filename)
-    returned = __import__(module_name, fromlist=[''])
+    returned = sys.modules.get(name)
+    if returned is None:
+        returned = imp.load_source(module_name, filename)
+        assert module_name in sys.modules
     return returned
 
 _package_name_generator = ('AUTOPKG_{0}'.format(x) for x in itertools.count())
@@ -72,5 +75,7 @@ def _make_module_name(filename):
     return filename.rsplit(".", 1)[0].replace(os.path.sep, ".")
 
 def _create_package_module(name, path):
-    returned = imp.load_module(name, None, path, ('', '', imp.PKG_DIRECTORY))
+    returned = types.ModuleType(name)
+    returned.__path__ = [path]
+    sys.modules[name] = returned
     return returned
