@@ -37,10 +37,12 @@ class SignatureTest(TestCase):
         self.assertEquals(sig.has_variable_args(), has_varargs)
         self._test_missing_arguments(sig, expected_signature)
     def _test_missing_arguments(self, signature, expected_signature):
-        missing = dict((x[0], x[1]) for x in expected_signature)
-        missing.pop(list(missing)[0])
+        expected_signature = [ExpectedArg(*x) for x in expected_signature]
+        kwargs = dict((x.name, 666) for x in expected_signature)
+        to_remove = [arg for arg in expected_signature]
+        kwargs.pop([e.name for e in expected_signature if not e.has_default][0])
         with self.assertRaises(MissingArguments):
-            signature.get_normalized_args((), missing)
+            signature.get_normalized_args((), kwargs)
     def _test_unknown_arguments(self, signature, expected_signature):
         if not signature.has_variable_kwargs():
             too_many = dict((x[0], x[1]) for x in expected_signature)
