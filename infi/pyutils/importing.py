@@ -1,6 +1,9 @@
+import hashlib
+import imp
 import itertools
 import logging
 import os
+import re
 import sys
 import types
 
@@ -11,13 +14,7 @@ _logger = logging.getLogger("infi.pyutils.importing")
 
 def import_file(filename):
     module_name = _setup_module_name_for_import(filename)
-    returned = sys.modules.get(module_name)
-    if returned is None:
-        if os.path.isdir(filename):
-            filename = os.path.join(filename, "__init__.py")
-        returned = __import__(module_name, fromlist=[""])
-        sys.modules[module_name] = returned
-        assert module_name in sys.modules
+    returned = __import__(module_name, fromlist=[''])
     return returned
 
 _package_name_generator = ('AUTOPKG_{0}'.format(x) for x in itertools.count())
@@ -48,19 +45,9 @@ def _create_new_module_name(filename):
     package_name = _cached_package_names.get(nonpackage_dir, None)
     if package_name is None:
         package_name = _generate_package_name(nonpackage_dir)
-        _logger.debug("Package name for %s is %s", nonpackage_dir, package_name)
-        sys.modules[package_name] = _ensure_package_module(package_name, nonpackage_dir)
+        sys.modules[package_name] = _create_package_module(package_name, nonpackage_dir)
         _cached_package_names[nonpackage_dir] = package_name
-    _ensure_all_packages_imported(nonpackage_dir, package_name, remainder)
     return '{0}.{1}'.format(package_name, remainder)
-
-def _ensure_all_packages_imported(nonpackage_dir, package_name, remainder):
-    path = nonpackage_dir
-    for x in remainder.split(".")[:-1]:
-        package_name += "."
-        package_name += x
-        path = os.path.join(path, x)
-        _ensure_package_module(package_name, path)
 
 def _split_nonpackage_dir(path):
     if not os.path.isdir(path):
@@ -84,12 +71,6 @@ def _make_module_name(filename):
     assert filename.endswith('.py') or filename.endswith('.pyc')
     return filename.rsplit(".", 1)[0].replace(os.path.sep, ".")
 
-def _ensure_package_module(name, path):
-    returned = sys.modules.get(name)
-    if returned is None:
-        returned = types.ModuleType(name)
-        returned.__path__ = [name]
-        returned.__package__ = name
-        returned.__file__ = path
-        sys.modules[name] = returned
+def _create_package_module(name, path):
+    returned = imp.load_module(name, None, path, ('', '', imp.PKG_DIRECTORY))
     return returned

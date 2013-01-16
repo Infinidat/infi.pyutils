@@ -48,16 +48,6 @@ class ImportingTest(TestCase):
         module1, module2 = self._import_and_verify(filenames_and_expected_values)
         self.assertNotEquals(_PACKAGE_NAME(module1),
                              _PACKAGE_NAME(module2))
-    def test__importing_twice_does_not_reload(self):
-        filename = os.path.join(self.root, "timed_module.py")
-        with open(filename, "w") as outfile:
-            outfile.write("import time;current_time=time.time()")
-        module1 = importing.import_file(filename)
-        t1 = module1.current_time
-        module2 = importing.import_file(filename)
-        t2 = module2.current_time
-        self.assertIs(module1, module2)
-        self.assertEquals(t1, t2)
     def test__importing_dotted_name(self):
         path_components = ["a", "b.c", "d"]
         path = self.root
