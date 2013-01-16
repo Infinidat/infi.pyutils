@@ -37,13 +37,13 @@ class EnumTestCase(TestCase):
         self.assertEqual(self.enum.value, self.enum.get("first_alias"))
         self.assertRaises(AttributeError, self.enum.get, "illegal")
     def assertEquality(self, a, b):
-        msg = "Equality check for {!r} == {!r} failed".format(a, b)
+        msg = "Equality check for {0!r} == {0!r} failed".format(a, b)
         self.assertTrue(a == b, msg)
         self.assertTrue(b == a, msg)
         self.assertFalse(a != b, msg)
         self.assertFalse(b != a, msg)
     def assertInequality(self, a, b):
-        msg = "Inequality check for {!r} != {!r} failed".format(a, b)
+        msg = "Inequality check for {0!r} != {0!r} failed".format(a, b)
         self.assertFalse(a == b, msg)
         self.assertFalse(b == a, msg)
         self.assertTrue(a != b, msg)

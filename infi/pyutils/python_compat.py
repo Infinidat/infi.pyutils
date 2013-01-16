@@ -20,9 +20,20 @@ def _get_underlying_classmethod_function(f):
 
 from six.moves import xrange
 from six import iteritems
+from six import itervalues
 
 if _IS_PYTHON_3:
     create_bound_method = types.MethodType
 else:
     def create_bound_method(func, self):
         return types.MethodType(func, self, type(self))
+
+if _IS_PYTHON_3:
+    basestring = str
+else:
+    from __builtin__ import basestring
+
+if _IS_BELOW_PYTHON_2_7:
+    from ordereddict import OrderedDict
+else:
+    from collections import OrderedDict

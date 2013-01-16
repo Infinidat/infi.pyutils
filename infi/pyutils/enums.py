@@ -1,5 +1,10 @@
 import itertools
-from collections import OrderedDict
+from .python_compat import (
+    basestring,
+    itervalues,
+    OrderedDict,
+    )
+
 
 class Value(object):
     """
@@ -24,7 +29,7 @@ class Value(object):
 class Enum(object):
     """
     An Enum class for python.
-    
+
     >>> x = Enum("TRUE",Value("FALSE", aliases=["NOT"]))
     >>> x.true
     TRUE
@@ -52,7 +57,7 @@ class Enum(object):
             raise AttributeError(attr)
         return state
     def __iter__(self):
-        return self._states.itervalues()
+        return itervalues(self._states)
     def get(self, attr):
         for state in self._states.values():
             if state == attr:
