@@ -1,9 +1,6 @@
-import hashlib
-import imp
 import itertools
 import logging
 import os
-import re
 import sys
 import types
 
@@ -18,7 +15,7 @@ def import_file(filename):
     if returned is None:
         if os.path.isdir(filename):
             filename = os.path.join(filename, "__init__.py")
-        returned = imp.load_source(module_name, filename)
+        returned = __import__(module_name, fromlist=[""])
         sys.modules[module_name] = returned
         assert module_name in sys.modules
     return returned
