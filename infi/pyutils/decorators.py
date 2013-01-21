@@ -1,5 +1,6 @@
 import functools
 import inspect
+from .patch import monkey_patch
 
 def wraps(wrapped):
     """ a convenience function on top of functools.wraps:
@@ -24,15 +25,7 @@ def _get_innner_func(f):
             return f
         f = wrapped
 
-_PATCHED_NAME_PREFIX = "_infi_patched_"
-
-def _monkey_patch(module, name, replacement):
-    original_name = _PATCHED_NAME_PREFIX + name
-    if getattr(module, original_name, None) is None:
-        setattr(module, original_name, getattr(module, name))
-        setattr(module, name, replacement)
-
-_monkey_patch(inspect, "getargspec", inspect_getargspec_patch)
+monkey_patch(inspect, "getargspec", inspect_getargspec_patch)
 
 _ipython_inspect_module = None
 try:
@@ -46,4 +39,4 @@ except ImportError:
         pass
 
 if _ipython_inspect_module is not None:
-    _monkey_patch(_ipython_inspect_module, "getargspec", ipython_getargspec_patch)
+    monkey_patch(_ipython_inspect_module, "getargspec", ipython_getargspec_patch)
