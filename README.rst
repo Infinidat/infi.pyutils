@@ -1,5 +1,8 @@
 Overview
 ========
+
+.. image:: https://travis-ci.org/Infinidat/infi.pyutils.png?branch=master
+
 *infi.pyutils* is a set of utilities for various tasks in Python.
 
 Contents
