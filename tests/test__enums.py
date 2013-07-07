@@ -18,6 +18,12 @@ class EnumTestCase(TestCase):
             self.assertEquality(self.enum.value, alias)
             self.assertEquality(Value(alias), self.enum.value)
             self.assertInequality(alias + "x", self.enum.value)
+    def test__aliased_values(self):
+        aliased_value = Value("aliased", aliases=[self.enum.value, self.enum.string])
+        for alias in ("value", "Value", "VALUE", "FIRST_ALIAS", "SECOND_ALIAS", "second_alias", "String", self.enum.value, self.enum.string):
+            self.assertEquality(aliased_value, alias)
+            self.assertEquality(Value(alias), aliased_value)
+            self.assertInequality(str(alias) + "x", aliased_value)
     def test__in(self):
         self.assertIn("String", self.enum)
         self.assertIn("VALUE", self.enum)
@@ -37,13 +43,13 @@ class EnumTestCase(TestCase):
         self.assertEqual(self.enum.value, self.enum.get("first_alias"))
         self.assertRaises(AttributeError, self.enum.get, "illegal")
     def assertEquality(self, a, b):
-        msg = "Equality check for {0!r} == {0!r} failed".format(a, b)
+        msg = "Equality check for {0!r} == {1!r} failed".format(a, b)
         self.assertTrue(a == b, msg)
         self.assertTrue(b == a, msg)
         self.assertFalse(a != b, msg)
         self.assertFalse(b != a, msg)
     def assertInequality(self, a, b):
-        msg = "Inequality check for {0!r} != {0!r} failed".format(a, b)
+        msg = "Inequality check for {0!r} != {1!r} failed".format(a, b)
         self.assertFalse(a == b, msg)
         self.assertFalse(b == a, msg)
         self.assertTrue(a != b, msg)

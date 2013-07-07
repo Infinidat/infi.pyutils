@@ -12,7 +12,7 @@ class Value(object):
     """
     def __init__(self, name, aliases = ()):
         super(Value, self).__init__()
-        self._name = name
+        self._name = str(name)
         self._aliases = set(aliases)
     def __repr__(self):
         return self._name.upper()
@@ -20,7 +20,7 @@ class Value(object):
         if isinstance(other, basestring):
             other = other.lower()
         for possible_name in itertools.chain([self._name], self._aliases):
-            if possible_name.lower() == other:
+            if (possible_name == other) or (isinstance(possible_name, basestring) and possible_name.lower() == other):
                 return True
         return False
     def __ne__(self, other):
