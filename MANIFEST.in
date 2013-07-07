@@ -1,0 +1,1 @@
+include MANIFEST.in tox.ini tests/*
