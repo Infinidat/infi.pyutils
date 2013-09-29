@@ -1,4 +1,5 @@
 import logging
+from six import reraise
 from contextlib import contextmanager
 
 _logger = logging.getLogger(__name__)
@@ -61,12 +62,13 @@ class ReferenceCounter(object):
             for callback in list(self._zero_refcount_callbacks):
                 try:
                     callback(self)
-                except BaseException as e:
+                except BaseException:
                     _logger.debug("Exception caught during remove_reference", exc_info=True)
                     if thrown is None:
-                        thrown = e
+                        thrown = sys.exc_info()
             if thrown is not None:
-                raise thrown
+                reraise(*thrown)
+
     @contextmanager
     def get_reference_context(self):
         self.add_reference()
