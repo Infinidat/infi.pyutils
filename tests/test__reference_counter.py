@@ -8,6 +8,17 @@ from infi.pyutils.reference_counter import (
     )
 
 class ReferenceCounterTest(TestCase):
+
+    def test__multiple_callback_errors(self):
+        r = MyReferenceCounter()
+        r.add_zero_refcount_callback(MyException.throw)
+        r.add_zero_refcount_callback(MyException.throw)
+        r.add_zero_refcount_callback(MyException.throw)
+        r.add_reference()
+        with self.assertRaises(MyException):
+            r.remove_reference()
+        self.assertEquals(r.get_reference_count(), 0)
+
     def test__reference_counter(self):
         self.value = False
         r = MyReferenceCounter(functools.partial(setattr, self, "value"))
@@ -129,7 +140,9 @@ class DependentReferenceCounterWithExceptionTest(TestCase):
 
 
 class MyException(Exception):
-    pass
+    @classmethod
+    def throw(cls, *_):
+        raise cls()
 
 class MyReferenceCounter(ReferenceCounter):
     def __init__(self, callback=None, raise_on_addref=False, raise_on_decref=False):
@@ -147,4 +160,3 @@ class MyReferenceCounter(ReferenceCounter):
             raise MyException()
         if self.callback is not None:
             self.callback(False)
-
