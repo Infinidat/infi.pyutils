@@ -180,3 +180,44 @@ class LazyImmutableDict(object):
 
     def _create_value(self, key):
         raise NotImplementedError()
+
+
+class cached_method_with_predicate(object):
+    """
+    expects a predicate which determines if the cache is valid.
+    predicate must except 1 argument, this is in order to enable passing class instance to predicate and allowing instance method to be decorated. (note self.cache_valid_predicate(inst) call in code)
+    see caching utils unittest for examples
+    """
+    def __init__(self, is_cache_valid_predicate):
+        self.is_cache_valid_predicate = is_cache_valid_predicate
+
+    def __call__(self, func):
+        """Decorator that caches a method's return value each time it is called.
+        If called later with the same arguments, and the 'cache_validate_predicate' returns true,
+        the cached value is returned, and not re-evaluated.
+        """
+        method_id = next(_cached_method_id_allocator)
+        @wraps(func)
+        def callee(inst, *args, **kwargs):
+            key = _get_instancemethod_cache_entry(method_id, *args, **kwargs)
+            if key is None:
+                logger.debug("Passed arguments to {0} are mutable, so the returned value will not be cached".format(func.__name__))
+                return func(inst, *args, **kwargs)
+            try:
+                if not self.is_cache_valid_predicate(inst):
+                    logger.debug("cache found invalidate., updating cache for {}, {}".format(func, inst))
+                    raise KeyError
+                return inst._cache[key]
+            except (KeyError, AttributeError):
+                value = func(inst, *args, **kwargs)
+                try:
+                    inst._cache[key] = value
+                except AttributeError:
+                    inst._cache = {}
+                    inst._cache[key] = value
+            return value
+
+        callee.__cached_method__ = True
+        callee.__method_id__ = method_id
+        return callee
+
