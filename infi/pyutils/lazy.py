@@ -67,11 +67,25 @@ def _get_instancemethod_cache_entry(method_id, *args, **kwargs):
     except TypeError:
         return None
 
-def cached_method(func):
+class DefaultStrategy(object):
+    @classmethod
+    def generate_cache_token(cls):
+        return None
+    @classmethod
+    def is_cache_token_valid(cls, token):
+        return True
+
+class InvalidToken(LookupError):
+    pass
+
+def cached_method(func=None, cache_strategy=DefaultStrategy):
     """Decorator that caches a method's return value each time it is called.
     If called later with the same arguments, the cached value is returned, and
     not re-evaluated.
     """
+    if func is None:
+        return functools.partial(cached_method, cache_strategy=cache_strategy)
+
     method_id = next(_cached_method_id_allocator)
     @wraps(func)
     def callee(inst, *args, **kwargs):
@@ -79,15 +93,22 @@ def cached_method(func):
         if key is None:
             logger.debug("Passed arguments to {0} are mutable, so the returned value will not be cached".format(func.__name__))
             return func(inst, *args, **kwargs)
-        try:
-            value = inst._cache[key]
-        except (KeyError, AttributeError):
-            value = func(inst, *args, **kwargs)
-            try:
-                inst._cache[key] = value
-            except AttributeError:
-                inst._cache = {}
-                inst._cache[key] = value
+
+        cache = getattr(inst, "_cache", None)
+        if cache is None:
+            cache = inst._cache = {}
+
+        cached_item = cache.get(key, None)
+
+        if cached_item is not None:
+            value, token = cached_item
+
+            if cache_strategy.is_cache_token_valid(token):
+                return value
+
+        value = func(inst, *args, **kwargs)
+        cache[key] = value, cache_strategy.generate_cache_token()
+
         return value
 
     callee.__cached_method__ = True
