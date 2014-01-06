@@ -1,5 +1,6 @@
 # Adapted from http://wiki.python.org/moin/PythonDecoratorLibrary#Cached_Properties
 import itertools
+import time
 from .decorators import wraps
 from .python_compat import iteritems
 from logging import getLogger
@@ -94,6 +95,42 @@ def cached_method(func):
     callee.__method_id__ = method_id
     return callee
 
+
+class cached_method_with_custom_cache(object):
+    def __init__(self, cache_class=None):
+        if cache_class is None:
+            cache_class = dict
+        self.cache_class = cache_class
+
+    def __call__(self, func):
+        """Decorator that caches a method's return value each time it is called.
+        If called later with the same arguments, the cached value is returned, and
+        not re-evaluated.
+        decorated class must implement inst.init_cache() which creates inst._cache dictionary.
+        """
+        method_id = next(_cached_method_id_allocator)
+        @wraps(func)
+        def callee(inst, *args, **kwargs):
+            key = _get_instancemethod_cache_entry(method_id, *args, **kwargs)
+            if key is None:
+                logger.debug("Passed arguments to {0} are mutable, so the returned value will not be cached".format(func.__name__))
+                return func(inst, *args, **kwargs)
+            try:
+                return inst._cache[func.func_name][key]
+            except (KeyError, AttributeError):
+                value = func(inst, *args, **kwargs)
+                if not hasattr(inst, "_cache"):
+                    inst._cache = CacheData()
+                if inst._cache.get(func.func_name, None) is None:
+                    #cache class creator returns a dict 
+                    inst._cache[func.func_name] = self.cache_class()
+                inst._cache[func.func_name][key] = value
+            return value
+
+        callee.__cached_method__ = True
+        callee.__method_id__ = method_id
+        return callee
+
 def _get_function_cache_entry(args, kwargs):
     return (tuple(args), frozenset(iteritems(kwargs)))
 
@@ -181,43 +218,34 @@ class LazyImmutableDict(object):
     def _create_value(self, key):
         raise NotImplementedError()
 
+class CacheData(dict):
+    def __init__(self):
+        super(CacheData, self).__init__()
+        self._is_valid = set()
+    def __getitem__(self, key):
+        if key not in self._is_valid:
+            logger.debug("cache found invalidate., updating cache for {}".format(key))
+            raise KeyError
+        return dict.__getitem__(self, key)
+    def __setitem__(self, key, value):
+        ret_val = dict.__setitem__(self, key, value)
+        self._is_valid.add(key)
+        return ret_val
+    def invalidate(self):
+        logger.debug("Invalidate cache")
+        self._is_valid = set()
 
-class cached_method_with_predicate(object):
-    """
-    expects a predicate which determines if the cache is valid.
-    predicate must except 1 argument, this is in order to enable passing class instance to predicate and allowing instance method to be decorated. (note self.cache_valid_predicate(inst) call in code)
-    see caching utils unittest for examples
-    """
-    def __init__(self, is_cache_valid_predicate):
-        self.is_cache_valid_predicate = is_cache_valid_predicate
+class TimerCacheData(CacheData):
+    def __init__(self, poll_time):
+        super(TimerCacheData, self).__init__()
+        self.poll_time = poll_time
 
-    def __call__(self, func):
-        """Decorator that caches a method's return value each time it is called.
-        If called later with the same arguments, and the 'cache_validate_predicate' returns true,
-        the cached value is returned, and not re-evaluated.
-        """
-        method_id = next(_cached_method_id_allocator)
-        @wraps(func)
-        def callee(inst, *args, **kwargs):
-            key = _get_instancemethod_cache_entry(method_id, *args, **kwargs)
-            if key is None:
-                logger.debug("Passed arguments to {0} are mutable, so the returned value will not be cached".format(func.__name__))
-                return func(inst, *args, **kwargs)
-            try:
-                if not self.is_cache_valid_predicate(inst):
-                    logger.debug("cache found invalidate., updating cache for {}, {}".format(func, inst))
-                    raise KeyError
-                return inst._cache[key]
-            except (KeyError, AttributeError):
-                value = func(inst, *args, **kwargs)
-                try:
-                    inst._cache[key] = value
-                except AttributeError:
-                    inst._cache = {}
-                    inst._cache[key] = value
-            return value
-
-        callee.__cached_method__ = True
-        callee.__method_id__ = method_id
-        return callee
-
+    def __getitem__(self, key):
+        next_poll_time, value = CacheData.__getitem__(self, key)
+        if time.time() > next_poll_time:
+            raise KeyError
+        return value
+    def __setitem__(self, key, value):
+        next_poll_time = time.time() + self.poll_time
+        ret_val = CacheData.__setitem__(self, key, (next_poll_time, value))
+        return ret_val

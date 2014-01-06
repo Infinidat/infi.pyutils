@@ -1,8 +1,10 @@
-import time
+import functools
 from . import test_utils
 from collections import defaultdict
-from infi.pyutils.lazy import cached_property, cached_method, populate_cache, cached_function
-from infi.pyutils.lazy import clear_cache, clear_cached_entry
+from infi.pyutils.lazy import CacheData, TimerCacheData, cached_property, \
+    cached_method, populate_cache, cached_function, clear_cache, clear_cached_entry, \
+    cached_method_with_custom_cache
+import time
 
 class Subject(object):
     def __init__(self):
@@ -46,6 +48,8 @@ class CachedPropertyTest(TestCase):
         populate_cache(self.subject)
         self.assertEquals(self.subject._counter, 1)
 
+poll_time = 0.05
+
 class CachedMethodTest(TestCase):
     def test__doc(self):
         self.assertTrue(self.subject.cached_method_1.__doc__ == self.subject.cached_method_2.__doc__ == self.subject.orig_method.__doc__)
@@ -86,6 +90,72 @@ class CachedMethodTest(TestCase):
         self.assertEquals(self.subject.prop, 2)
         self.assertEquals(self.subject.cached_method_4(), 1)
         clear_cache(self.subject)
+
+    def test_caching_method_on_class_instance(self):
+        class Foo(object):
+            def __init__(self):
+                self.counter = 0
+            def invalidate_cache(self):
+                self._cache["tested_method"].invalidate()
+            @cached_method_with_custom_cache(CacheData)
+            def tested_method(self):
+                self.counter += 1
+                return self.counter
+
+        foo = Foo()
+        for i in range(1, 5):
+            for j in range(5):
+                self.assertEquals(foo.tested_method(), i)
+            foo.invalidate_cache()
+
+    def test_caching_method_on_external_call(self):
+        class Bar(object):
+            def __init__(self):
+                self.counter = 0
+            @cached_method_with_custom_cache(functools.partial(TimerCacheData, poll_time))
+            def tested_method(self):
+                self.counter += 1
+                return self.counter
+
+        bar = Bar()
+        for _ in range(3):
+            self.assertEquals(bar.tested_method(), 1)
+
+        time.sleep(poll_time + 0.01)
+        for _ in range(3):
+            self.assertEquals(bar.tested_method(), 2)
+
+    def test_single_class_with_two_caches(self):
+        class FooBar(object):
+            def __init__(self):
+                self.timer = 0
+                self.data_counter = 0
+            @cached_method_with_custom_cache(functools.partial(TimerCacheData, poll_time))
+            def timer_cache(self):
+                self.timer += 1
+                return self.timer
+            @cached_method_with_custom_cache(CacheData)
+            def data_cache(self):
+                self.data_counter += 1
+                return self.data_counter
+            def invalidate_cache(self):
+                self._cache["data_cache"].invalidate()
+
+        foobar = FooBar()
+        for i in range(1, 10):
+            for j in range(10):
+                self.assertEquals(foobar.data_cache(), i)
+                time.sleep(0.1)
+            foobar.invalidate_cache()
+
+        for _ in range(3):
+            self.assertEquals(foobar.timer_cache(), 1)
+            foobar.invalidate_cache()
+
+        time.sleep(poll_time + 0.1)
+        for _ in range(3):
+            self.assertEquals(foobar.timer_cache(), 2)
+            foobar.invalidate_cache()
 
 @cached_function
 def func():
@@ -164,92 +234,3 @@ class ClearCachedEntryTest(TestCase):
         self.assertEquals(method(1), 1)
         clear_cached_entry(method, 3)
         self.assertEquals(method(1), 1)
-
-#examples for predicates which could be used for cached_method_with_predcate decorator
-class CacheDataPredicate(object):
-    def __init__(self):
-        self._is_valid = False
-    def is_valid(self):
-        return self._is_valid
-    def set_valid(self):
-        logger.debug("Set valid cache")
-        self._is_valid = True
-    def set_invalid(self):
-        logger.debug("Invalidate cache")
-        self._is_valid = False
-
-
-class DataTimer(object):
-    def __init__(self, poll_time):
-        self.poll_time = poll_time
-        self.next_poll_time = time.time()
-    def is_data_valid(self, *_):
-        cur_time = time.time()
-        if cur_time > self.next_poll_time:
-            self.next_poll_time = cur_time + self.poll_time
-            return False
-        return True
-
-
-class CachedMethodWithPredicateTest(TestCase):
-    def test_cache_data_predicate(self):
-        cache_predicate = caching_utils.CacheDataPredicate()
-        cache_predicate.set_valid()
-        self.assertTrue(cache_predicate.is_valid())
-        cache_predicate.set_invalid()
-        self.assertFalse(cache_predicate.is_valid())
-
-    def test_timer_predicate(self):
-        poll_time = 0.5
-        timer = caching_utils.DataTimer(poll_time)
-        self.assertFalse(timer.is_data_valid())
-        #we expect that timer will reset it self at last call, so we have 'new' time coutner
-        for i in range(3):
-            INFO("iteration {}/{}".format(i, 3))
-            self.assertTrue(timer.is_data_valid())
-            time.sleep(poll_time + 0.1)
-            self.assertFalse(timer.is_data_valid())
-
-    def test_caching_method_on_class_instance(self):
-        class Foo(object):
-            def __init__(self):
-                self.cache_data_predicate = caching_utils.CacheDataPredicate()
-                self.invalidate_cache()
-                self.counter = 0
-            def is_valid(self):
-                return self.cache_data_predicate.is_valid()
-            def invalidate_cache(self):
-                self.cache_data_predicate.set_invalid()
-            @caching_utils.cached_method(is_valid)
-            def tested_method(self):
-                self.counter += 1
-                self.cache_data_predicate.set_valid()
-                return self.counter
-
-        foo = Foo()
-        for i in range(1, 10):
-            for j in range(10):
-                DEBUG("Iteration {}, {}".format(i, j))
-                self.assertEquals(foo.tested_method(), i)
-            foo.invalidate_cache()
-
-    def test_caching_method_on_external_call(self):
-        poll_time = 1
-        timer = caching_utils.DataTimer(poll_time)
-        class Bar(object):
-            def __init__(self):
-                self.counter = 0
-            @caching_utils.cached_method(timer.is_data_valid)
-            def tested_method(self):
-                self.counter += 1
-                return self.counter
-
-        bar = Bar()
-        for _ in range(3):
-            self.assertEquals(bar.tested_method(), 1)
-
-        time.sleep(poll_time + 0.1)
-        for _ in range(3):
-            self.assertEquals(bar.tested_method(), 2)
-
-
