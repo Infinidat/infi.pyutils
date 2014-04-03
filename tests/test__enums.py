@@ -42,6 +42,11 @@ class EnumTestCase(TestCase):
         self.assertEqual(self.enum.value, self.enum.get("FIRST_ALIAS"))
         self.assertEqual(self.enum.value, self.enum.get("first_alias"))
         self.assertRaises(AttributeError, self.enum.get, "illegal")
+    def test_get_value_name(self):
+        input_values = ["CamelCase", "lower_case", "UPPER_CASE"]
+        enum = Enum(*input_values)
+        self.assertEqual([val.get_name() for val in enum], input_values)
+        self.assertEqual([str(val) for val in enum], [val.upper() for val in input_values])
     def assertEquality(self, a, b):
         msg = "Equality check for {0!r} == {1!r} failed".format(a, b)
         self.assertTrue(a == b, msg)

@@ -16,6 +16,8 @@ class Value(object):
         self._aliases = set(aliases)
     def __repr__(self):
         return self._name.upper()
+    def get_name(self):
+        return self._name
     def __eq__(self, other):
         if isinstance(other, basestring):
             other = other.lower()
