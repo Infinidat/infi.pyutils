@@ -56,6 +56,8 @@ class Enum(object):
                 state = Value(state)
             self._states[state._name.lower()] = state
     def __getattr__(self, attr):
+        if attr.startswith("_"):
+            raise AttributeError(attr)
         state = self._states.get(attr, None)
         if state is None:
             raise AttributeError(attr)

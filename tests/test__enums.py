@@ -1,3 +1,4 @@
+import copy
 from infi.pyutils.enums import Enum, Value
 from .test_utils import TestCase
 
@@ -42,7 +43,18 @@ class EnumTestCase(TestCase):
         self.assertEqual(self.enum.value, self.enum.get("FIRST_ALIAS"))
         self.assertEqual(self.enum.value, self.enum.get("first_alias"))
         self.assertRaises(AttributeError, self.enum.get, "illegal")
-    def test_get_value_name(self):
+    def test__get_attribute(self):
+        self.assertEqual(self.enum.string, "String")
+        with self.assertRaises(AttributeError):
+            self.enum.fake_value
+        with self.assertRaises(AttributeError):
+            self.enum._fake_value
+    def test__deepcopy(self):
+        my_dict = {'a': 1, 'b': Enum('a', 'b', 'c', 'd')}
+        dict_copy = copy.deepcopy(my_dict)
+        self.assertEqual(my_dict['a'], dict_copy['a'])
+        self.assertEqual(list(my_dict['b']), list(dict_copy['b']))
+    def test__get_value_name(self):
         input_values = ["CamelCase", "lower_case", "UPPER_CASE"]
         enum = Enum(*input_values)
         self.assertEqual([val.get_name() for val in enum], input_values)
