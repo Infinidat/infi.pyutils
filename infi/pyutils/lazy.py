@@ -112,19 +112,20 @@ class cached_method_with_custom_cache(object):
         @wraps(func)
         def callee(inst, *args, **kwargs):
             key = _get_instancemethod_cache_entry(method_id, *args, **kwargs)
+            func_name = func.__name__
             if key is None:
-                logger.debug("Passed arguments to {0} are mutable, so the returned value will not be cached".format(func.__name__))
+                logger.debug("Passed arguments to {0} are mutable, so the returned value will not be cached".format(func_name))
                 return func(inst, *args, **kwargs)
             try:
-                return inst._cache[func.func_name][key]
+                return inst._cache[func_name][key]
             except (KeyError, AttributeError):
                 value = func(inst, *args, **kwargs)
                 if not hasattr(inst, "_cache"):
                     inst._cache = CacheData()
-                if inst._cache.get(func.func_name, None) is None:
+                if inst._cache.get(func_name, None) is None:
                     #cache class creator returns a dict 
-                    inst._cache[func.func_name] = self.cache_class()
-                inst._cache[func.func_name][key] = value
+                    inst._cache[func_name] = self.cache_class()
+                inst._cache[func_name][key] = value
             return value
 
         callee.__cached_method__ = True
@@ -224,7 +225,7 @@ class CacheData(dict):
         self._is_valid = set()
     def __getitem__(self, key):
         if key not in self._is_valid:
-            logger.debug("cache found invalidate., updating cache for {}".format(key))
+            logger.debug("cache found invalidate., updating cache for {0}".format(key))
             raise KeyError
         return dict.__getitem__(self, key)
     def __setitem__(self, key, value):
