@@ -60,8 +60,8 @@ class Value(VersionedBase):
     def __init__(self, key, list_or_dict=None, default_version=ALL, **kwargs):
         super(Value, self).__init__(default_version)
         if isinstance(key, Value):
-            key = key.get_value()
-        self._key = key
+            key = str(key)
+        self._key = str(key)
         if list_or_dict is None:
             list_or_dict = []
         if isinstance(list_or_dict, dict):
@@ -110,6 +110,9 @@ class Value(VersionedBase):
     def _copy(self):
         return Value(self._key, self._values, default_version=self._version)
 
+    def __hash__(self, *args, **kwargs):
+        return self._key.__hash__()
+
     def __eq__(self, o):
         compare_values = [str(v).lower() for v in self._get_values()]
         if isinstance(o, Value):
@@ -128,7 +131,7 @@ class Value(VersionedBase):
         return self._key.upper()
 
     def __repr__(self):
-        return "{{{0}:{1}}}".format(self._key, self._values)
+        return self._key.upper()
 
 class Enum(VersionedBase):
     """
@@ -158,7 +161,7 @@ class Enum(VersionedBase):
         for value in values:
             if not isinstance(value, Value):
                 value = Value(value)
-            self._values[value._key.lower()] = value.as_version(default_version)
+            self._values[str(value)] = value.as_version(default_version)
 
     def bind_to_version(self, version):
         super(Enum, self).bind_to_version(version)
@@ -188,9 +191,9 @@ class Enum(VersionedBase):
             return super(Enum, self).__getattribute__(key)
 
     def __getitem__(self, key):
-        if isinstance(key, Enum):
-            key = key.get_value()
-        return self._values[key.lower()]
+        if isinstance(key, Value):
+            key = str(key)
+        return self._values[key.upper()]
 
     def __repr__(self):
         return [v for v in itervalues(self._values)].__repr__()
