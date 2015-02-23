@@ -185,8 +185,8 @@ class EnumTestCase(TestCase):
     def test__get_value_name(self):
         input_values = ["CamelCase", "lower_case", "UPPER_CASE"]
         enum = Enum(*input_values)
-        self.assertEqual(sorted([val.get_name() for val in enum]), sorted(input_values))
-        self.assertEqual(sorted([str(val) for val in enum]), sorted([val.upper() for val in input_values]))
+        self.assertEqual([val.get_name() for val in enum], input_values)
+        self.assertEqual([str(val) for val in enum], [val.upper() for val in input_values])
 
     def assertEquality(self, a, b):
         msg = "Equality check for {0!r} == {1!r} failed".format(a, b)
