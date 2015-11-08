@@ -1,14 +1,20 @@
 language: python
 sudo: false
 python:
-  - 2.6
-  - 2.7
-  - 3.3
-  - 3.4
-  - 3.5
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+- 2.6
+- 2.7
+- 3.3
+- 3.4
+- 3.5
 install:
-  - pip install -e .
-  - pip install nose
-# command to run tests, e.g. python setup.py test
+- pip install -e .
+- pip install nose
 script: nosetests -w tests
+deploy:
+  provider: pypi
+  user: vmalloc
+  password:
+    secure: MxgTwIrWll+U6aDQcQFsTFvyp/6QUo8Sw/OmiZx5XeF2l3TRzDVAdAfnt0MO03fWWkxtTsG1BpHhfjGX4T9hKO+pURonUdb6QhnGe+MDFOvB7xOM/e6C2roUSqj414T5oK1WnHGse3PmSA2zLG8Sd2F/axIYazihYp4GTSdBAUc=
+  on:
+    tags: true
+    repo: Infinidat/infi.pyutils
