@@ -2,7 +2,6 @@ from packaging.version import Version, parse
 from .python_compat import OrderedDict, itervalues
 
 ALL = '0.0'
-LATEST = '1000000.0'
 
 class UnboundException(AttributeError):
     pass
@@ -31,6 +30,10 @@ class VersionedBase(object):
 
     def get_bound_version(self):
         return str(self._version) if self._version is not None else None
+
+    def __reduce__(self, *args, **kwargs):
+        return (self.__class__, (str(self._version),))
+
 
 class Value(VersionedBase):
     """
@@ -133,6 +136,9 @@ class Value(VersionedBase):
     def __repr__(self):
         return self._key.upper()
 
+    def __reduce__(self, *args, **kwargs):
+        return (self.__class__, (self._key, dict((str(k), v) for k, v in self._values.items()), str(self._version)))
+
 class Enum(VersionedBase):
     """
     An Enum class for python.
@@ -197,3 +203,17 @@ class Enum(VersionedBase):
 
     def __repr__(self):
         return [v for v in itervalues(self._values)].__repr__()
+
+    def __reduce__(self, *args, **kwargs):
+        return (self.__class__, tuple(itervalues(self._values)), {'default_version':str(self._version)})
+    
+    def __setstate__(self, state):
+        if '_values' in state:
+            self._values = state['values']
+        if 'default_version' in state:
+            self.bind_to_version(state['default_version'])
+        
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return NotImplemented
+        return self._version == other._version and self._values == other._values

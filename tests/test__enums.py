@@ -1,6 +1,8 @@
-import copy
-from infi.pyutils.enums import Enum, Value, ALL, LATEST, UnboundException
+import copy, pickle
+from infi.pyutils.enums import Enum, Value, ALL, UnboundException
 from .test_utils import TestCase
+
+LATEST = '1000000.0'
 
 class VersionedValueTest(TestCase):
     def test_non_versioned_value(self):
@@ -187,6 +189,9 @@ class EnumTestCase(TestCase):
         enum = Enum(*input_values)
         self.assertEqual([val.get_name() for val in enum], input_values)
         self.assertEqual([str(val) for val in enum], [val.upper() for val in input_values])
+
+    def test__picklable(self):
+        self.assertTrue(self.enum == pickle.loads(pickle.dumps(self.enum)))
 
     def assertEquality(self, a, b):
         msg = "Equality check for {0!r} == {1!r} failed".format(a, b)

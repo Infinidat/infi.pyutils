@@ -145,7 +145,7 @@ class CachedMethodTest(TestCase):
         for i in range(1, 10):
             for j in range(10):
                 self.assertEquals(foobar.data_cache(), i)
-                time.sleep(0.1)
+                time.sleep(0.01)
             foobar.invalidate_cache()
 
         for _ in range(3):
