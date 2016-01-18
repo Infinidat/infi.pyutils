@@ -206,3 +206,10 @@ class EnumTestCase(TestCase):
         self.assertFalse(b == a, msg)
         self.assertTrue(a != b, msg)
         self.assertTrue(b != a, msg)
+
+
+class TestValues(TestCase):
+    def test__sortableValues(self):
+        values = [Value("B"), Value("a")]
+        values.sort()
+        assert values == [Value("a"), Value("B")]

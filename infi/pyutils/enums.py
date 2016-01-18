@@ -133,6 +133,12 @@ class Value(VersionedBase):
     def __str__(self):
         return self._key.upper()
 
+    def __cmp__(self, other):
+        return cmp(str(self), str(other))
+
+    def __lt__(self, other):
+        return str(self) < str(other)
+
     def __repr__(self):
         return self._key.upper()
 
