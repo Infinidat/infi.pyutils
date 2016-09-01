@@ -211,7 +211,7 @@ class LazyImmutableDict(object):
         return self._dict.__contains__(key)
 
     def has_key(self, key):
-        return self._dict.has_key(key)
+        return key in self._dict
 
     def __len__(self):
         return len(self._dict)
