@@ -336,20 +336,6 @@ Context Utilities
 -----------------
 *infi.pyutils.contexts* contains *contextmanager*, a drop-in replacement for *contextlib.contextmanager*, using the crafted *wraps* implementation from *decorators*.
 
-Import Utilities
-----------------
-*infi.pyutils.importing* contains **import_file**, a function for importing a module by its name::
-
- >>> from infi.pyutils.importing import *
- >>> import tempfile, os
- >>> temp_dir = tempfile.mkdtemp()
- >>> filename = os.path.join(temp_dir, "my_file.py")
- >>> with open(filename, "w") as f:
- ...     _ = f.write("a=2")
- >>> module = import_file(filename)
- >>> module.a
- 2
-
 Reference Counters
 ------------------
 *infi.pyutils.reference_counter* is an implementation of a reference counter with dependency support::
