@@ -25,7 +25,8 @@ def _get_innner_func(f):
             return f
         f = wrapped
 
-monkey_patch(inspect, "getargspec", inspect_getargspec_patch)
+if hasattr(inspect, "getargspec"):
+    monkey_patch(inspect, "getargspec", inspect_getargspec_patch)
 
 _ipython_inspect_module = None
 try:
